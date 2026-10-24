@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title><meta name="app-version" content="shotchart-v6-theme">
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v7-zones">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f9e6c4;--court2:#f3d7a6;--cl:#3d2208;--paint:rgba(255,107,26,.22)}
 :root{color-scheme:light}:root[data-theme=dark]{color-scheme:dark;--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57}
@@ -81,7 +81,7 @@ button{transition:transform .08s,background .15s,color .15s}button:active{transf
 #courtWrap svg{box-shadow:0 4px 18px rgba(0,0,0,.18)}
 .hintbar{display:flex;justify-content:space-around;font-size:13px;font-weight:700;color:var(--mut);margin:8px 0}
 .hintbar i{font-style:normal;font-weight:900}.hintbar .x{color:var(--miss)}.hintbar .o{color:var(--make)}
-.tally{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 8px}
+.tally0{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 8px}
 button.danger{background:var(--miss);color:#fff;border-color:var(--miss)}
 dialog{border:0;border-radius:18px;background:var(--card);color:var(--ink);width:min(92vw,420px);padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 dialog::backdrop{background:rgba(5,10,20,.55)}dialog h2{margin:0 0 6px;font-size:20px}
@@ -99,9 +99,20 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
 #moveBar{position:fixed;left:10px;right:10px;bottom:76px;z-index:15;background:var(--acc);color:#fff;font-weight:800;border-radius:14px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between}
 .selring{animation:pulse 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes pulse{50%{transform:scale(1.18)}}
 .it .ed{min-height:36px;padding:4px 10px;font-size:13px}
+header h1{font-size:15px;line-height:1.1;display:flex;flex-direction:column;min-width:0}header h1 small{font-size:10px;letter-spacing:1.5px;opacity:.65;font-weight:800}header h1 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card h3{font-size:19px;font-weight:900;color:var(--ink);letter-spacing:.2px;text-transform:none;border-left:5px solid var(--acc);padding-left:8px}
+.pill{border-radius:999px;min-height:36px;padding:4px 12px;font-weight:800;font-size:14px}.pill.on,.chip.on,.seg.flt button.on,#pbSpd button.on,nav button.on{background:#ffb800!important;color:#1a1200!important;border-color:#ffb800!important}
+.mini{display:flex;gap:6px;align-items:center;margin-top:6px}.mini .tl{flex:1;font-weight:800;font-size:14px}
+#courtWrap{position:relative}.tpill{position:absolute;transform:translate(-50%,-140%);background:#0f1b2d;color:#fff;font-weight:800;font-size:13px;padding:5px 10px;border-radius:999px;white-space:nowrap;pointer-events:none;animation:tp 1.25s ease forwards;box-shadow:0 4px 14px rgba(0,0,0,.35);z-index:4}
+.tpill.mk{background:var(--make)}.tpill.ms{background:var(--miss)}@keyframes tp{0%{opacity:0;transform:translate(-50%,-90%) scale(.8)}12%{opacity:1;transform:translate(-50%,-140%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-190%)}}
+.hero{display:flex;align-items:flex-end;gap:10px}.hero b{font-size:72px;line-height:.9;font-weight:900;letter-spacing:-2px}.hero span{font-weight:800;color:var(--mut);padding-bottom:8px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.tiles div{background:var(--bg);border-radius:12px;padding:10px}.tiles b{display:block;font-size:26px;font-weight:900}.tiles span{font-size:12px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.wws td{padding:7px 4px}.wws .sb{height:8px;border-radius:4px;background:var(--acc);display:block;min-width:2px}
+.it .mm{font-weight:900}.it .sub{display:block;font-size:12px;color:var(--mut)}.it .ib{min-height:34px;padding:2px 8px;font-size:13px}
+.pbhud{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;font-weight:800}
 </style>
 </head><body>
-<header><h1 id="title">Shot Chart</h1><small id="ver" style="opacity:.6;font-size:11px;margin-left:-4px">v6</small><span id="hdrClock" class="tm"></span><button id="thm" class="thm" aria-label="Toggle light/dark"></button><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New Game</button></header>
+<header><h1><small>SHOT CHART <span id="ver">v7</span></small><span id="title"></span></h1><span id="hdrClock" class="tm"></span><button id="thm" class="thm" aria-label="Toggle light/dark"></button><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New</button></header>
 
 <section id="v-chart" class="view on">
  <div class="topbar">
@@ -114,9 +125,8 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
  <div id="endBar" class="row" hidden style="justify-content:center"><b id="endTxt">End of period</b><button class="pri sm" id="nextP">Next period ▸</button></div>
  <div class="chips" id="chips"></div>
  <div id="courtWrap"><svg class="court" id="court"></svg></div>
- <div class="hintbar"><span><i class="x">✕</i> 1 tap = MISS</span><span><i class="o">◯</i> 2 taps = MAKE</span><span>Hold a shot = edit</span></div>
- <div class="tally" id="tally"></div>
- <div class="row"><button id="undo" style="flex:1">↶ Undo last</button><button id="flip">⇄ Switch team</button></div>
+ <div class="hintbar"><span><i class="x">✕</i> tap = miss</span><span><i class="o">◯</i> double = make</span><span>hold = edit</span></div>
+ <div class="mini"><span class="tl" id="tally"></span><button class="pill" id="ftM" style="color:var(--make)">FT ✓</button><button class="pill" id="ftX" style="color:var(--miss)">FT ✕</button><button class="pill" id="zTog">▦</button><button class="pill" id="undo" aria-label="Undo">↶</button></div>
 </section>
 
 <section id="v-stats" class="view">
@@ -125,7 +135,7 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
 </section>
 
 <section id="v-time" class="view">
- <div class="row"><select id="pbTeam" style="flex:1"></select><select id="pbPlayer" style="flex:1"></select></div>
+ <div class="row"><select id="pbTeam" style="flex:1"></select><select id="pbPlayer" style="flex:1"></select></div><div class="seg flt" id="pbRes" style="margin:6px 0"><button data-r="" class="on">All</button><button data-r="1">Makes</button><button data-r="0">Misses</button></div>
  <div class="pbhud" id="pbHud"></div>
  <svg class="court" id="rcourt"></svg>
  <div class="pbctl"><button id="pbBack" aria-label="Step back">⏮</button><button id="pbPlay" class="pri" aria-label="Play">▶ Play</button><button id="pbFwd" aria-label="Step forward">⏭</button>
@@ -285,23 +295,45 @@ $('#edMove').onclick=()=>{const s=edShot();if(!$('#v-chart').classList.contains(
 $('#mvCancel').onclick=()=>{ED.moving=false;ED.tmp=null;$('#moveBar').hidden=true;openEdit(ED.id)};
 function commit(p,make){ghost&&ghost.remove();ghost=null;const z=classify(p.x,p.y,G.three);const pts=make?(z[1]==='3'?3:2):0;
  G.shots.push({id:uid(),t:gameMs(),rem:remain(),period,team,player,x:+p.x.toFixed(2),y:+p.y.toFixed(2),zone:z,make,pts});persist();renderChart();
- navigator.vibrate&&navigator.vibrate(make?[15,30,15]:10);toast((make?'✅ MAKE ':'❌ Miss ')+ZONES[z].n+(player?' · #'+player:''))}
+ navigator.vibrate&&navigator.vibrate(make?[15,30,15]:10);tapPill(G.shots[G.shots.length-1])}
 function undo(){if(ED.id)closeEdit();const i=G.shots.map(s=>s.team).lastIndexOf(team);if(i<0)return toast('Nothing to undo');G.shots.splice(i,1);persist();renderChart();toast('Undid last shot')}
 $('#undo').onclick=undo;
 
+// ---------- FT / zones / helpers ----------
+const ZS={rim:'Rim',paint:'Paint',mid:'Mid',long2:'Long 2',c3:'Corner 3',w3:'3PT',t3:'3PT'};
+function ftL(){return G.fts||(G.fts=[])}
+function ftOf(t,p,per){return ftL().filter(f=>(t==='all'||f.team===t)&&(!p||String(f.player)===p)&&(!per||f.period==per))}
+function logFT(make){ftL().push({id:uid(),t:gameMs(),rem:remain(),period,team,player,make});persist();renderChart();navigator.vibrate&&navigator.vibrate(10);toast((make?'◯ FT made':'✕ FT missed')+(player?' · #'+player:''))}
+$('#ftM').onclick=()=>logFT(true);$('#ftX').onclick=()=>logFT(false);
+function dist(s){const y=s.y>47?94-s.y:s.y;return Math.round(Math.hypot(s.x-25,y-HY))}
+let zChart=localStorage['shotchart.zc']==='1',zStats=localStorage['shotchart.zs']!=='0';
+$('#zTog').onclick=()=>{zChart=!zChart;localStorage['shotchart.zc']=zChart?1:0;renderChart()};
+const ZT=(()=>{const out={};const st=.5;for(let y=0;y<47;y+=st){let x=0;while(x<50){const z=classify(x+st/2,y+st/2,G?G.three:19.75);let x2=x+st;while(x2<50&&classify(x2+st/2,y+st/2,G?G.three:19.75)===z)x2+=st;(out[z]=out[z]||[]).push([x,y,x2-x]);x=x2}}return out});
+let ztCache={};
+function zoneLayer(sh,full){const R=G.three;const T=ztCache[R]||(ztCache[R]=ZT());let o='<g class="zl" pointer-events="none">';
+ const cnt={};Object.keys(ZONES).forEach(k=>{const a=sh.filter(s=>s.zone===k);cnt[k]={a:a.length,m:a.filter(s=>s.make).length}});
+ const col=c=>!c.a?'#9aa4b2':c.m/c.a>=.5?'#0a9d48':c.m/c.a>=.33?'#e0a800':'#e5262c';
+ const halves=full?[0,1]:[0];
+ for(const k in T){const c=cnt[k],f=col(c);let d='';T[k].forEach(([x,y,w])=>{halves.forEach(hh=>{const yy=hh?94-y-.5:y;d+=`M${x} ${yy}h${w}v.5h-${w}z`})});o+=`<path d="${d}" fill="${f}" opacity="${c.a?.2:.06}"/>`}
+ Object.keys(ZONES).forEach(k=>{const c=cnt[k];if(!c.a)return;const Z=ZONES[k];const pos=k==='c3'?[[3.2,8]] .concat([[46.8,8]]):k==='w3'?[[6.5,24],[43.5,24]]:k==='mid'?[[11.5,10],[38.5,10]]:[[Z.lx,k==='rim'?6.5:Z.ly]];
+  pos.forEach(([x,y])=>halves.forEach(hh=>{const yy=hh?94-y:y;o+=`<g><rect x="${x-3.6}" y="${yy-2.1}" width="7.2" height="4.2" rx="1.2" fill="#0f1b2d" opacity=".82"/><text x="${x}" y="${yy-.2}" font-size="1.75" font-weight="900" text-anchor="middle" fill="#fff">${c.m}/${c.a}</text><text x="${x}" y="${yy+1.55}" font-size="1.35" font-weight="800" text-anchor="middle" fill="${col(c)==='#e5262c'?'#ff8a8d':col(c)==='#e0a800'?'#ffd34d':'#6dffa8'}">${Math.round(c.m/c.a*100)}%</text></g>`}))});
+ return o+'</g>'}
+function tapPill(s){const w=$('#courtWrap'),M=court.getScreenCTM();if(!M)return;const r=w.getBoundingClientRect(),el=document.createElement('div');el.className='tpill '+(s.make?'mk':'ms');
+ el.textContent=(s.make?'◯ Make':'✕ Miss')+' · '+ZS[s.zone]+' · '+(s.player?'#'+s.player:shotClk(s));el.style.left=Math.max(80,Math.min(r.width-80,M.a*s.x+M.e-r.left))+'px';el.style.top=(M.d*s.y+M.f-r.top)+'px';w.appendChild(el);setTimeout(()=>el.remove(),1300)}
 // ---------- Chart view ----------
 function roster(t){return G.rosters[t]||[]}
 function tname(t){return t==='us'?G.us:G.them}
 function renderChart(){$('#tUs').textContent=G.us;$('#tThem').textContent=G.them;$('#tUs').classList.toggle('on',team==='us');$('#tThem').classList.toggle('on',team==='them');
  const ch=$('#chips');ch.innerHTML=`<button class="chip ${player?'':'on'}" data-p="">Team</button>`+roster(team).map(r=>`<button class="chip ${player===r.n?'on':''}" data-p="${esc(r.n)}">#${esc(r.n)}${r.name?' '+esc(r.name):''}</button>`).join('');
  ch.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{player=b.dataset.p||null;renderChart()});
- const mine=G.shots.filter(s=>s.team===team);drawCourt(court,mine.map(s=>ED.moving&&s.id===ED.id&&ED.tmp?{...s,x:ED.tmp.x,y:ED.tmp.y}:s));const es=ED.id&&mine.find(s=>s.id===ED.id);if(es){const q=ED.moving&&ED.tmp?ED.tmp:es;court.insertAdjacentHTML('beforeend',`<circle class="selring" cx="${q.x}" cy="${q.y}" r="2.4" fill="rgba(255,107,26,.18)" stroke="var(--acc)" stroke-width=".35"/>`)}
+ const mine=G.shots.filter(s=>s.team===team);$('#zTog').classList.toggle('on',zChart);drawCourt(court,mine.map(s=>ED.moving&&s.id===ED.id&&ED.tmp?{...s,x:ED.tmp.x,y:ED.tmp.y}:s));const es=ED.id&&mine.find(s=>s.id===ED.id);if(es){const q=ED.moving&&ED.tmp?ED.tmp:es;court.insertAdjacentHTML('beforeend',`<circle class="selring" cx="${q.x}" cy="${q.y}" r="2.4" fill="rgba(255,107,26,.18)" stroke="var(--acc)" stroke-width=".35"/>`)}
+ zChart&&court.insertAdjacentHTML('afterbegin','');if(zChart){const g=court.querySelector('g');g&&g.insertAdjacentHTML('afterend',zoneLayer(mine,G.full))}
  const last=mine[mine.length-1];last&&court.insertAdjacentHTML('beforeend',`<circle cx="${last.x}" cy="${last.y}" r="2" fill="none" stroke="var(--acc)" stroke-width=".25" stroke-dasharray=".6 .4"/>`);
- const m=mine.filter(s=>s.make).length,pts=mine.reduce((a,s)=>a+s.pts,0),good=mine.filter(s=>ZONES[s.zone].q==='good').length;
- $('#tally').innerHTML=`<span>${tname(team)}: ${m}/${mine.length} FG ${mine.length?Math.round(m/mine.length*100):0}%</span><span>${pts} pts</span><span class="g">${mine.length?Math.round(good/mine.length*100):0}% good looks</span>`;
- $('#title').innerHTML=`<b>●</b> ${esc(G.name)}`}
+ const m=mine.filter(s=>s.make).length,fm=ftOf(team).filter(f=>f.make).length,pts=mine.reduce((a,s)=>a+s.pts,0)+fm,ft=ftOf(team);
+ $('#tally').innerHTML=`${esc(tname(team))} <span style="color:var(--acc)">${pts}</span> · FG ${m}/${mine.length}${ft.length?` · FT ${fm}/${ft.length}`:''}`;
+ $('#title').textContent=G.name}
 $('#tUs').onclick=()=>{team='us';player=null;renderChart()};$('#tThem').onclick=()=>{team='them';player=null;renderChart()};
-$('#flip').onclick=()=>{team=team==='us'?'them':'us';player=null;renderChart()};
+
 function periodOpts(){const n=G.periods||4,l=n===2?'H':'Q';let o='';for(let i=1;i<=n;i++)o+=`<option value="${i}">${l}${i}</option>`;return o+`<option value="${n+1}">OT</option>`}
 $('#period').onchange=e=>period=+e.target.value;
 
@@ -313,35 +345,36 @@ function fillFilters(){const ft=$('#fTeam').value||'us';$('#fTeam').innerHTML=`<
  $('#fPlayer').innerHTML='<option value="">All players</option>'+[...new Set(ps)].map(p=>`<option value="${esc(p)}">#${esc(p)}</option>`).join('');$('#fPlayer').value=[...new Set(ps)].includes(fp)?fp:'';
  const fpr=$('#fPeriod').value;$('#fPeriod').innerHTML='<option value="">All periods</option>'+periodOpts();$('#fPeriod').value=fpr}
 ['#fTeam','#fPlayer','#fPeriod'].forEach(s=>$(s).onchange=renderStats);
-function renderStats(){fillFilters();const sh=filt($('#fTeam').value,$('#fPlayer').value,$('#fPeriod').value);
- const m=sh.filter(s=>s.make).length,pts=sh.reduce((a,s)=>a+s.pts,0),t3=sh.filter(s=>s.zone[1]==='3'),t3m=t3.filter(s=>s.make).length;
- const q={good:0,okay:0,poor:0};sh.forEach(s=>q[ZONES[s.zone].q]++);const n=sh.length||1;
- let h=`<div class="card"><h3>Overview</h3><div class="big"><div><b>${m}/${sh.length}</b><span>FG ${pct(m,sh.length)}</span></div><div><b>${pts}</b><span>Points · ${(pts/n).toFixed(2)}/shot</span></div><div><b>${t3m}/${t3.length}</b><span>3PT ${pct(t3m,t3.length)}</span></div></div></div>`;
+function renderStats(){fillFilters();const tf=$('#fTeam').value,pf=$('#fPlayer').value,per=$('#fPeriod').value,sh=filt(tf,pf,per),ft=ftOf(tf,pf,per),fm=ft.filter(f=>f.make).length;
+ const m=sh.filter(s=>s.make).length,pts=sh.reduce((a,s)=>a+s.pts,0)+fm,t3=sh.filter(s=>s.zone[1]==='3'),t3m=t3.filter(s=>s.make).length,t2=sh.filter(s=>s.zone[1]!=='3'),t2m=t2.filter(s=>s.make).length,N=sh.length;
+ const q={good:0,okay:0,poor:0};sh.forEach(s=>q[ZONES[s.zone].q]++);const n=N||1;
+ let h=`<div class="card"><h3>The big picture</h3><div class="hero"><b>${N?Math.round(m/N*100):0}<small style="font-size:36px">%</small></b><span>FG · ${m}/${N}</span></div>
+ <div class="tiles"><div><b>${pts}</b><span>Points</span></div><div><b>${t2m}/${t2.length}</b><span>2PT FG · ${pct(t2m,t2.length)}</span></div><div><b>${t3m}/${t3.length}</b><span>3PT FG · ${pct(t3m,t3.length)}</span></div><div><b>${N?((pts-fm)/N).toFixed(2):'–'}</b><span>Pts / shot</span></div><div><b>${fm}/${ft.length}</b><span>FT · ${pct(fm,ft.length)}</span></div><div><b>${pct(q.good,N)}</b><span>Good looks</span></div></div></div>`;
+ const rows=[['At the rim',['rim']],['Paint',['paint']],['Mid-range',['mid','long2']],['Three-point',['c3','w3','t3']],['↳ Corner 3',['c3']]];
+ h+=`<div class="card"><h3>Where we shoot</h3><table class="wws"><tr><th>Zone</th><th>Att</th><th>Made</th><th>%</th><th style="width:28%">Share</th></tr>${rows.map(([l,ks])=>{const a=sh.filter(s=>ks.includes(s.zone)),mm=a.filter(s=>s.make).length;return`<tr><td><b>${l}</b></td><td>${a.length}</td><td>${mm}</td><td><b>${pct(mm,a.length)}</b></td><td><i class="sb" style="width:${a.length/n*100}%"></i></td></tr>`}).join('')}</table></div>`;
+ h+=`<div class="card"><h3 style="display:flex;align-items:center">Shot zones<button class="pill ${zStats?'on':''}" id="zsTog" style="margin-left:auto">▦ Zones</button></h3><div id="zc"></div><small style="color:var(--mut)">Made/attempts per zone · tint: green ≥50%, gold ≥33%, red below</small></div>`;
  h+=`<div class="card"><h3>Shot quality</h3><div class="bar"><i style="width:${q.good/n*100}%;background:var(--make)"></i><i style="width:${q.okay/n*100}%;background:#e0a800"></i><i style="width:${q.poor/n*100}%;background:var(--miss)"></i></div>
- <div class="row" style="justify-content:space-between"><span class="g">Good ${pct(q.good,sh.length)}</span><span class="o">Okay ${pct(q.okay,sh.length)}</span><span class="p">Poor ${pct(q.poor,sh.length)}</span></div>
+ <div class="row" style="justify-content:space-between"><span class="g">Good ${pct(q.good,N)}</span><span class="o">Okay ${pct(q.okay,N)}</span><span class="p">Poor ${pct(q.poor,N)}</span></div>
  <small style="color:var(--mut)">Good = rim, corner 3, wing/top 3 · Okay = short paint · Poor = mid-range & long 2</small></div>`;
- const zs=Object.keys(ZONES).map(k=>{const a=sh.filter(s=>s.zone===k),mm=a.filter(s=>s.make).length,p=a.reduce((x,s)=>x+s.pts,0);return{k,a:a.length,m:mm,p}});
- const zsvg=document.createElementNS('http://www.w3.org/2000/svg','svg');const hm=zs.map(z=>{const Z=ZONES[z.k];if(!z.a)return'';const f=z.m/z.a,col=f>=.5?'var(--make)':f>=.33?'#e0a800':'var(--miss)';const pos=z.k==='c3'?[[2.6,6],[47.4,6]]:z.k==='w3'?[[7,24],[43,24]]:z.k==='mid'?[[12,9],[38,9]]:[[Z.lx,Z.ly]];
-  return pos.map(([x,y])=>`<g><rect x="${x-4}" y="${y-2.3}" width="8" height="4.6" rx="1.2" fill="${col}" opacity=".9"/><text x="${x}" y="${y-.2}" font-size="1.9" font-weight="800" text-anchor="middle" fill="#fff">${z.m}/${z.a}</text><text x="${x}" y="${y+1.7}" font-size="1.5" text-anchor="middle" fill="#fff">${Math.round(f*100)}%</text></g>`).join('')}).join('');
- h+=`<div class="card"><h3>Zone chart</h3><div id="zc"></div><small style="color:var(--mut)">Box color = FG%: green ≥50%, gold ≥33%, red below (zone totals, shown on both sides)</small></div>`;
- h+=`<div class="card"><h3>By zone</h3><table><tr><th>Zone</th><th>FG</th><th>%</th><th>Pts/shot</th></tr>${zs.map(z=>`<tr><td><span style="color:${QC[ZONES[z.k].q]}">●</span> ${ZONES[z.k].n}</td><td>${z.m}/${z.a}</td><td>${pct(z.m,z.a)}</td><td>${z.a?(z.p/z.a).toFixed(2):'–'}</td></tr>`).join('')}</table></div>`;
- const byP={};sh.forEach(s=>{const k=(s.team==='them'?G.them+' ':'')+(s.player?'#'+s.player:'Team (untagged)');(byP[k]=byP[k]||[]).push(s)});
- h+=`<div class="card"><h3>By player</h3><table><tr><th>Player</th><th>FG</th><th>%</th><th>Pts</th><th>Good</th></tr>${Object.entries(byP).map(([k,a])=>{const mm=a.filter(s=>s.make).length;return`<tr><td>${esc(k)}</td><td>${mm}/${a.length}</td><td>${pct(mm,a.length)}</td><td>${a.reduce((x,s)=>x+s.pts,0)}</td><td>${pct(a.filter(s=>ZONES[s.zone].q==='good').length,a.length)}</td></tr>`}).join('')||'<tr><td colspan=5>No shots yet</td></tr>'}</table></div>`;
- $('#stats').innerHTML=h;const zc=document.createElementNS('http://www.w3.org/2000/svg','svg');zc.setAttribute('class','court');$('#zc').appendChild(zc);
- const keep=G.full;G.full=false;drawCourt(zc,sh.map(s=>s.y>47?{...s,y:94-s.y}:s).map(s=>({...s})),'');zc.querySelectorAll('circle[stroke-width=".5"],path[stroke-width=".5"]').forEach(e=>e.setAttribute('opacity','.35'));zc.insertAdjacentHTML('beforeend',hm);G.full=keep}
+ const byP={},key=x=>(x.team==='them'?G.them+' ':'')+(x.player?'#'+x.player:'Team (untagged)');sh.forEach(s=>(byP[key(s)]=byP[key(s)]||{s:[],f:[]}).s.push(s));ft.forEach(f=>(byP[key(f)]=byP[key(f)]||{s:[],f:[]}).f.push(f));
+ h+=`<div class="card"><h3>By player</h3><table><tr><th>Player</th><th>FG</th><th>%</th><th>FT</th><th>Pts</th></tr>${Object.entries(byP).map(([k,o])=>{const a=o.s,mm=a.filter(s=>s.make).length,fmm=o.f.filter(f=>f.make).length;return`<tr><td>${esc(k)}</td><td>${mm}/${a.length}</td><td>${pct(mm,a.length)}</td><td>${fmm}/${o.f.length}</td><td><b>${a.reduce((x,s)=>x+s.pts,0)+fmm}</b></td></tr>`}).join('')||'<tr><td colspan=5>No shots yet</td></tr>'}</table></div>`;
+ $('#stats').innerHTML=h;$('#zsTog').onclick=()=>{zStats=!zStats;localStorage['shotchart.zs']=zStats?1:0;renderStats()};
+ const zc=document.createElementNS('http://www.w3.org/2000/svg','svg');zc.setAttribute('class','court');$('#zc').appendChild(zc);
+ const keep=G.full;G.full=false;const fs=sh.map(s=>s.y>47?{...s,y:94-s.y}:s);drawCourt(zc,fs,'');if(zStats){zc.querySelectorAll('circle[stroke-width=".5"],path[stroke-width=".5"]').forEach(e=>e.setAttribute('opacity','.3'));zc.insertAdjacentHTML('beforeend',zoneLayer(fs,false))}G.full=keep}
 
 // ---------- Playback ----------
 const NS='http://www.w3.org/2000/svg';let pb={n:0,playing:false,speed:1,raf:null,anim:false},hl=null;
-function pbList(){const t=$('#pbTeam').value||'both',p=$('#pbPlayer').value;return G.shots.filter(s=>(t==='both'||s.team===t)&&(!p||String(s.player)===p)).slice().sort((a,b)=>a.t-b.t)}
+let pbR='';function pbList(){const t=$('#pbTeam').value||'both',p=$('#pbPlayer').value;return G.shots.filter(s=>(t==='both'||s.team===t)&&(!p||String(s.player)===p)&&(pbR===''||String(+s.make)===pbR)).slice().sort((a,b)=>a.t-b.t)}
 function pbFilters(){const t=$('#pbTeam').value||'both';$('#pbTeam').innerHTML=`<option value="both">Both teams</option><option value="us">${esc(G.us)}</option><option value="them">${esc(G.them)}</option>`;$('#pbTeam').value=t;
  const p=$('#pbPlayer').value;const ps=[...new Set(G.shots.filter(s=>t==='both'||s.team===t).map(s=>s.player).filter(Boolean))].sort((a,b)=>a-b);
  $('#pbPlayer').innerHTML='<option value="">Whole team</option>'+ps.map(x=>`<option value="${esc(x)}">#${esc(x)}</option>`).join('');$('#pbPlayer').value=ps.includes(p)?p:''}
+$$('#pbRes button').forEach(b=>b.onclick=()=>{pbR=b.dataset.r;$$('#pbRes button').forEach(x=>x.classList.toggle('on',x===b));pbStop();pb.n=0;renderTimeline()});
 ['#pbTeam','#pbPlayer'].forEach(id=>$(id).onchange=()=>{pbStop();pbFilters();pb.n=0;pbDraw();renderList()});
 function hoopOf(s){return{x:25,y:s.y>47?94-HY:HY}}
 function pbDraw(){const L=pbList();pb.n=Math.min(pb.n,L.length);const sv=$('#rcourt');drawCourt(sv,[],arcsSVG(L.slice(0,pb.n))+L.slice(0,pb.n).map(x=>marker(x)).join(''));sv.insertAdjacentHTML('beforeend','<g id="fx"></g>');$('#scrub').max=L.length;$('#scrub').value=pb.n;pbHud(L,pb.n,L[pb.n-1]);
  const cur=hl&&L.slice(0,pb.n).find(s=>s.id===hl);cur&&sv.insertAdjacentHTML('beforeend',`<circle cx="${cur.x}" cy="${cur.y}" r="2.2" fill="none" stroke="var(--acc)" stroke-width=".35"/>`)}
-function pbHud(L,n,cur){const d=L.slice(0,n),sc={us:0,them:0};d.forEach(s=>sc[s.team]+=s.pts);const m=d.filter(s=>s.make).length,pl=G.periods===2?'H':'Q';
- $('#pbHud').innerHTML=`<span class="sc">${esc(G.us)} <b>${sc.us}</b> · ${esc(G.them)} <b>${sc.them}</b></span><span>FG ${m}/${d.length} ${pct(m,d.length)}</span><span class="tm">${cur?shotClk(cur):''}</span>`}
+function pbHud(L,n,cur){const d=L.slice(0,n),sc={us:0,them:0};d.forEach(s=>sc[s.team]+=s.pts);const m=d.filter(s=>s.make).length,t3=d.filter(s=>s.zone[1]==='3'),t3m=t3.filter(s=>s.make).length,pt=d.reduce((a,s)=>a+s.pts,0);
+ $('#pbHud').innerHTML=`<span class="sc">${esc(G.us)} <b>${sc.us}</b> · ${esc(G.them)} <b>${sc.them}</b></span><span>FG ${m}/${d.length} ${pct(m,d.length)}</span><span>3PT ${t3m}/${t3.length}</span><span>${d.length?(pt/d.length).toFixed(2):'–'} PPS</span><span class="tm">${cur?shotClk(cur):''}</span>`}
 function figY(s){return s.y>47?Math.min(s.y,89.4):Math.max(s.y,4.6)}
 const SKIN=['#f1c27d','#c68642','#8d5524','#e0ac69'],HAIR=['#2b1b0e','#5a3214','#111','#a0522d'];
 function figure(s){const col=s.team==='us'?'var(--us)':'var(--them)',h=[...(s.player||s.id)].reduce((a,c)=>a+c.charCodeAt(0),0),sk=SKIN[h%4],hr=HAIR[(h>>2)%4];
@@ -379,7 +412,7 @@ function arcsSVG(L){return showArcs?L.map(s=>`<path d="${arcPath(s)}" fill="none
 const TN=16;
 function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':'var(--miss)';
  let tr='';for(let i=0;i<TN;i++){const k=1-i/TN;tr+=`<circle r="${(.5*k+.06).toFixed(3)}" fill="${c}" opacity="0"/>`}
- fx.innerHTML=`<g class="trail glow">${tr}</g>`+figure(s)+`<ellipse id="bshd" rx=".5" ry=".3" fill="rgba(0,0,0,.25)" cx="-99" cy="-99"/><circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="-99" cy="-99"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
+ fx.innerHTML=`<polyline id="trS" fill="none" stroke="rgba(0,0,0,.22)" stroke-width=".5" stroke-linecap="round" stroke-linejoin="round" transform="translate(.25 .45)"/><polyline id="trL" fill="none" stroke="${c}" stroke-width=".42" stroke-linecap="round" stroke-linejoin="round"/><g class="trail glow">${tr}</g>`+figure(s)+`<ellipse id="bshd" rx=".5" ry=".3" fill="rgba(0,0,0,.25)" cx="-99" cy="-99"/><circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="-99" cy="-99"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
  const sv=$('#rcourt'),q=k=>fx.querySelector(k),bshd=fx.querySelector('#bshd'),F={lift:q('.lift'),torso:q('.torso'),leg:q('.leg'),arm:q('.arm'),slv:q('.slv'),shL:q('.shL'),shR:q('.shR'),shd:q('.shd')},pop=q('.pop'),ball=q('#ball'),fl=q('#flash'),trail=[...fx.querySelectorAll('.trail circle')],hp=hoopOf(s);
  const nets=[...sv.querySelectorAll('.net')],net=nets.length>1&&s.y>47?nets[1]:nets[0],rims=sv.querySelectorAll('circle[stroke="#ff6b1a"]');
  const ox=s.x,oy=figY(s),r=relPt(s),arc=arcPts(s,r.x,r.y),D=1900/pb.speed,t0=performance.now(),side=s.x<=25?1:-1,hist=[];
@@ -396,6 +429,7 @@ function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':
    else{const L=Math.hypot(hp.x-r.x,hp.y-r.y)||1,bx=(r.x-hp.x)/L,by=(r.y-hp.y)/L,hop=Math.abs(Math.sin(u*Math.PI*2))*(1-u)*.7,p={x:hp.x+bx*u*2.6,y:hp.y+by*u*2.6};ball.setAttribute('r',(.55+hop*.3).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
    fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-cl((u-.4)/.6)*.9).toFixed(2));hist.unshift(hist[0])}
   if(hist.length>TN*2)hist.length=TN*2;const fade=t>.72?1-seg(t,.8,1):1;
+  {const pts=hist.filter((_,i)=>i%2===0).slice(0,TN).map(p=>p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ');const tl=fx.querySelector('#trL'),ts=fx.querySelector('#trS');tl.setAttribute('points',pts);ts.setAttribute('points',pts);tl.setAttribute('opacity',(.9*fade).toFixed(2));ts.setAttribute('opacity',fade.toFixed(2))}
   trail.forEach((e,i)=>{const p=hist[i*2];if(!p){e.setAttribute('opacity',0);return}e.setAttribute('cx',p.x.toFixed(2));e.setAttribute('cy',p.y.toFixed(2));e.setAttribute('opacity',((1-i/TN)*.75*fade).toFixed(2))});
   if(t<1)pb.raf=requestAnimationFrame(f);else{pb.anim=false;done()}}
  pb.raf=requestAnimationFrame(f)}
@@ -408,7 +442,9 @@ $('#pbBack').onclick=()=>{pbStop();pb.n=Math.max(0,pb.n-1);pbDraw();markList()};
 $$('#pbSpd button').forEach(b=>b.onclick=()=>{pb.speed=+b.dataset.s;$$('#pbSpd button').forEach(x=>x.classList.toggle('on',x===b))});
 $('#pbArcs').onclick=()=>{showArcs=!showArcs;localStorage.setItem('shotchart.arcs',showArcs?1:0);$('#pbArcs').classList.toggle('on',showArcs);if(!pb.anim)pbDraw()};
 $('#scrub').oninput=e=>{pbStop();hl=null;pb.n=+e.target.value;pbDraw();markList()};
-function renderList(){const L=pbList(),pl=G.periods===2?'H':'Q';$('#slist').innerHTML=L.map((s,i)=>`<div class="it" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'O':'X'}</span><span class="tm">${shotClk(s)}</span><span style="flex:1">${esc(tname(s.team))}${s.player?' #'+esc(s.player):''} · ${ZONES[s.zone].n}</span><b>${s.pts?'+'+s.pts:''}</b><button class="ed sm" data-e="${s.id}">✎ Edit</button></div>`).join('')||'<p class="hint">No shots yet</p>';
+function renderList(){const L=pbList();$('#slist').innerHTML=L.map((s,i)=>`<div class="it" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">●</span><span style="flex:1"><span class="mm" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'MAKE':'MISS'}</span> ${s.pts?'+'+s.pts:''}<span class="sub">${ZS[s.zone]==='3PT'?'Three':s.zone==='mid'||s.zone==='long2'?'Mid-range':ZS[s.zone]} · ${dist(s)} ft · ${shotClk(s)} · ${esc(s.team==='them'?G.them:G.us)}${s.player?' #'+esc(s.player):''}</span></span><button class="ib" data-f="${s.id}" aria-label="Flip">⇄</button><button class="ib" data-x="${s.id}" aria-label="Delete">🗑</button><button class="ib ed" data-e="${s.id}">✎</button></div>`).join('')||'<p class="hint">No shots yet</p>';
+ $$('#slist [data-f]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const s=G.shots.find(x=>x.id===b.dataset.f);s.make=!s.make;recalc(s);persist();renderTimeline();toast(s.make?'Now a make':'Now a miss')});
+ $$('#slist [data-x]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();const s=G.shots.find(x=>x.id===b.dataset.x);confirmDlg('Delete this shot?',(s.make?'Make':'Miss')+' · '+ZONES[s.zone].n+' · '+shotClk(s),'Delete',()=>{G.shots=G.shots.filter(x=>x!==s);persist();renderTimeline();toast('Shot deleted')})});
  $$('#slist .ed').forEach(b=>b.onclick=ev=>{ev.stopPropagation();pbStop();openEdit(b.dataset.e)});
  $$('#slist .it').forEach(r=>r.onclick=()=>{pbStop();hl=r.dataset.id;pb.n=+r.dataset.i+1;pbDraw();markList();window.scrollTo({top:0,behavior:'smooth'})});markList()}
 function markList(){$$('#slist .it').forEach(r=>r.classList.toggle('hl',hl?r.dataset.id===hl:+r.dataset.i===pb.n-1))}
@@ -486,7 +522,7 @@ $('#hNew').onclick=()=>{const d=$('#ngDlg');$('#ngName').value='Game '+(DB.games
 $('#ngDlg').addEventListener('close',()=>{if($('#ngDlg').returnValue!=='ok')return;const g=newGame();Object.assign(g,{name:$('#ngName').value||g.name,us:$('#ngUs').value||G.us,them:$('#ngThem').value||'Them',date:$('#ngDate').value||g.date,full:$('#ngFull').value==='1',three:G.three,periods:G.periods||4,plen:G.plen||8,rosters:JSON.parse(JSON.stringify(G.rosters))});
  DB.games.push(g);period=1;team='us';openGame(g.id);go('chart');toast('New game: '+g.name)});
 function confirmDlg(t,b,ok,fn,no){$('#cfT').textContent=t;$('#cfB').textContent=b;$('#cfOk').textContent=ok;const d=$('#cfDlg');d.returnValue='';d.onclose=()=>{d.returnValue==='ok'?fn():no&&no()};d.showModal()}
-$('#hClr').onclick=()=>{if(!G.shots.length)return toast('No shots to clear');confirmDlg('Clear all shots?','Removes all '+G.shots.length+' shots from "'+G.name+'" and resets the clock. Saved games stay.','Clear shots',()=>{G.shots=[];G.clock={running:false,start:0,acc:0,off:0};persist();renderAll();toast('Shots cleared')})};
+$('#hClr').onclick=()=>{if(!G.shots.length)return toast('No shots to clear');confirmDlg('Clear all shots?','Removes all '+G.shots.length+' shots from "'+G.name+'" and resets the clock. Saved games stay.','Clear shots',()=>{G.shots=[];G.fts=[];G.clock={running:false,start:0,acc:0,off:0};persist();renderAll();toast('Shots cleared')})};
 
 // ---------- Nav ----------
 function go(v){if($('#edDlg').open&&v!=='chart'&&v!=='time')closeEdit();$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='stats')renderStats();if(v!=='time')pbStop();if(v==='time')renderTimeline();if(v==='games')renderGames();if(v==='chart')renderChart();window.scrollTo(0,0)}
