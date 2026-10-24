@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title><meta name="app-version" content="shotchart-v3-trails">
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v4-edit">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f1d6a8;--cl:#5b3a17}
 @media(prefers-color-scheme:dark){:root{--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57;--court:#2b2418;--cl:#f3d9b0;--make:#2fdc7a;--miss:#ff5257}}
@@ -45,7 +45,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
 .g{color:var(--make);font-weight:800}.o{color:#d19a00;font-weight:800}.p{color:var(--miss);font-weight:800}
 .bar{height:14px;display:flex;border-radius:7px;overflow:hidden;margin:6px 0}
 .list .it{display:flex;gap:8px;align-items:center;padding:10px 6px;border-bottom:1px solid var(--line)}
-.list .it.hl{background:rgba(255,107,26,.18)}
+.list .it .ed{display:none}.list .it.hl .ed{display:inline-block}.list .it.hl{background:rgba(255,107,26,.18)}
 .dot{width:22px;text-align:center;font-weight:900}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#0f1b2d;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;opacity:0;transition:.2s;pointer-events:none;z-index:9}
 #toast.on{opacity:1}
@@ -83,6 +83,12 @@ dialog[open]{animation:fade .2s ease}
 .spd button{padding:6px 5px;min-width:34px;min-height:46px;font-size:14px}
 #pbArcs{min-width:44px;font-size:20px}#pbArcs.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .glow circle{mix-blend-mode:normal}
+dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width:min(100vw,520px);border-radius:18px 18px 0 0;padding:12px 14px calc(14px + env(safe-area-inset-bottom));z-index:20;box-shadow:0 -10px 40px rgba(0,0,0,.35)}
+.sheethd{display:flex;align-items:center;gap:8px;margin-bottom:8px}.sheethd b{flex:1;font-size:15px}
+.seg button.on.mk{background:var(--make);color:#fff}.seg button.on.ms{background:var(--miss);color:#fff}
+#moveBar{position:fixed;left:10px;right:10px;bottom:76px;z-index:15;background:var(--acc);color:#fff;font-weight:800;border-radius:14px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between}
+.selring{animation:pulse 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes pulse{50%{transform:scale(1.18)}}
+.it .ed{min-height:36px;padding:4px 10px;font-size:13px}
 </style>
 </head><body>
 <header><h1 id="title">Shot Chart</h1><span id="hdrClock" class="tm"></span><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New Game</button></header>
@@ -97,7 +103,7 @@ dialog[open]{animation:fade .2s ease}
  <div id="clkPanel" class="row adj" hidden><button class="sm" data-adj="-10">−10s</button><button class="sm" data-adj="-1">−1s</button><button class="sm" data-adj="1">+1s</button><button class="sm" data-adj="10">+10s</button><button class="sm" id="clkSet">Set time…</button></div>
  <div class="chips" id="chips"></div>
  <div id="courtWrap"><svg class="court" id="court"></svg></div>
- <div class="hintbar"><span><i class="x">✕</i> Tap = miss</span><span><i class="o">◯</i> Double-tap = make</span><span>Hold = undo</span></div>
+ <div class="hintbar"><span><i class="x">✕</i> 1 tap = MISS</span><span><i class="o">◯</i> 2 taps = MAKE</span><span>Hold a shot = edit</span></div>
  <div class="tally" id="tally"></div>
  <div class="row"><button id="undo" style="flex:1">↶ Undo last</button><button id="flip">⇄ Switch team</button></div>
 </section>
@@ -139,6 +145,12 @@ dialog[open]{animation:fade .2s ease}
 
 <nav><button data-v="chart" class="on">🏀 Chart</button><button data-v="stats">📊 Stats</button><button data-v="time">▶ Playback</button><button data-v="games">📁 Games</button></nav>
 <div id="toast"></div>
+<div id="moveBar" hidden><span>Drag the shot to its new spot</span><button id="mvCancel" class="sm">Cancel</button></div>
+<dialog id="edDlg" class="sheet"><div class="sheethd"><b id="edT"></b><button id="edDone" class="pri sm">Done</button></div>
+ <div class="seg"><button id="edMake" class="mk">◯ Make</button><button id="edMiss" class="ms">✕ Miss</button></div>
+ <label>Team</label><div class="seg"><button id="edUs" class="us"></button><button id="edThem" class="them"></button></div>
+ <label>Player</label><div class="chips" id="edChips"></div>
+ <div class="row" style="margin-top:6px"><button id="edMove" style="flex:1">✥ Move</button><button id="edDel" class="danger" style="flex:1">🗑 Delete</button></div></dialog>
 <dialog id="ngDlg"><form method="dialog" id="ngForm"><h2>New game</h2>
  <label>Game name</label><input id="ngName" style="width:100%">
  <div class="row"><div style="flex:1"><label>Our team</label><input id="ngUs" style="width:100%"></div><div style="flex:1"><label>Opponent</label><input id="ngThem" style="width:100%"></div></div>
@@ -199,21 +211,51 @@ function marker(s,cls=''){const c=s.make?'var(--make)':'var(--miss)';return s.ma
 function drawCourt(svg,shots,extra=''){const {H,s}=courtSVG(G.full,G.three);svg.setAttribute('viewBox',`-.5 -.5 51 ${H+1}`);svg.innerHTML=`<g stroke-width=".25">${s}</g>${shots.map(x=>marker(x)).join('')}${extra}`}
 
 // ---------- Tap input ----------
-const court=$('#court');let pend=null,lp=null,downAt=null,ghost=null;
+const court=$('#court');let pend=null,lp=null,downAt=null,ghost=null,ED={id:null,moving:false,tmp:null,drag:false};
 function pt(e){const p=court.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(court.getScreenCTM().inverse());return{x:Math.min(50,Math.max(0,q.x)),y:Math.min(G.full?94:47,Math.max(0,q.y))}}
 function showGhost(p){ghost&&ghost.remove();ghost=document.createElementNS('http://www.w3.org/2000/svg','circle');ghost.setAttribute('cx',p.x);ghost.setAttribute('cy',p.y);ghost.setAttribute('r','1.6');ghost.setAttribute('fill','rgba(255,107,26,.45)');court.appendChild(ghost)}
-court.addEventListener('pointerdown',e=>{e.preventDefault();downAt={x:e.clientX,y:e.clientY,t:Date.now()};clearTimeout(lp);lp=setTimeout(()=>{lp='fired';if(pend){clearTimeout(pend.to);pend=null;ghost&&ghost.remove()}undo();navigator.vibrate&&navigator.vibrate([20,40,20])},600)});
-court.addEventListener('pointermove',e=>{if(downAt&&Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y)>12&&lp!=='fired'){clearTimeout(lp);lp=null}});
-court.addEventListener('pointerup',e=>{e.preventDefault();if(lp==='fired'){lp=null;downAt=null;return}clearTimeout(lp);lp=null;if(!downAt)return;downAt=null;
+function nearest(p,r=3){let best=null,bd=r;G.shots.filter(s=>s.team===team).forEach(s=>{const d=Math.hypot(s.x-p.x,s.y-p.y);if(d<=bd){bd=d;best=s}});return best}
+court.addEventListener('pointerdown',e=>{e.preventDefault();try{court.setPointerCapture(e.pointerId)}catch(_){}
+ if(ED.moving){ED.drag=true;ED.tmp=pt(e);renderChart();return}
+ const p0=pt(e);downAt={x:e.clientX,y:e.clientY,t:Date.now(),p:p0,moved:false};clearTimeout(lp);
+ lp=setTimeout(()=>{lp='fired';const hit=nearest(p0);if(hit){navigator.vibrate&&navigator.vibrate(25);openEdit(hit.id)}},450)});
+court.addEventListener('pointermove',e=>{if(ED.moving&&ED.drag){ED.tmp=pt(e);renderChart();return}
+ if(downAt&&!downAt.moved&&Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y)>12){downAt.moved=true;if(lp!=='fired'){clearTimeout(lp);lp=null}}});
+court.addEventListener('pointerup',e=>{e.preventDefault();
+ if(ED.moving&&ED.drag){ED.drag=false;ED.tmp=pt(e);renderChart();const sh=G.shots.find(x=>x.id===ED.id),z=classify(ED.tmp.x,ED.tmp.y,G.three);
+  const np={...ED.tmp};confirmDlg('Move shot here?','New zone: '+ZONES[z].n+(sh&&sh.make?' ('+(z[1]==='3'?3:2)+' pts)':''),'Move',()=>{sh.x=+np.x.toFixed(2);sh.y=+np.y.toFixed(2);recalc(sh);persist();toast('Moved · '+ZONES[sh.zone].n)},()=>{});
+  ED.moving=false;ED.tmp=null;$('#moveBar').hidden=true;$('#cfDlg').addEventListener('close',()=>{refresh();openEdit(ED.id)},{once:true});return}
+ const wasLong=lp==='fired',d=downAt;clearTimeout(lp);lp=null;downAt=null;
+ if(wasLong||!d||d.moved||ED.moving)return; // long-press or drag never logs a shot
  const p=pt(e),now=Date.now();
  if(pend&&now-pend.t<=300&&Math.hypot(p.x-pend.p.x,p.y-pend.p.y)<5){clearTimeout(pend.to);const q=pend.p;pend=null;commit(q,true);return}
  if(pend){clearTimeout(pend.to);commit(pend.p,false)}
  showGhost(p);pend={p,t:now,to:setTimeout(()=>{const q=pend.p;pend=null;commit(q,false)},300)}});
-court.addEventListener('pointercancel',()=>{clearTimeout(lp);lp=null;downAt=null});
+court.addEventListener('pointercancel',()=>{clearTimeout(lp);lp=null;downAt=null;ED.drag=false});
+court.addEventListener('contextmenu',e=>e.preventDefault());
+function recalc(s){s.zone=classify(s.x,s.y,G.three);s.pts=s.make?(s.zone[1]==='3'?3:2):0}
+function refresh(){renderChart();if($('#v-time').classList.contains('on')){pbFilters();pbDraw();renderList()}if($('#v-stats').classList.contains('on'))renderStats()}
+// ---------- Edit sheet ----------
+function openEdit(id){const s=G.shots.find(x=>x.id===id);if(!s){closeEdit();return}ED.id=id;const d=$('#edDlg'),pl=G.periods===2?'H':'Q';
+ $('#edT').textContent=`${s.make?'MAKE':'MISS'} · ${fmt(s.t)} ${s.period>G.periods?'OT':pl+s.period} · ${ZONES[s.zone].n}${s.pts?' · '+s.pts+' pts':''}`;
+ $('#edMake').classList.toggle('on',s.make);$('#edMiss').classList.toggle('on',!s.make);
+ $('#edUs').textContent=G.us;$('#edThem').textContent=G.them;$('#edUs').classList.toggle('on',s.team==='us');$('#edThem').classList.toggle('on',s.team==='them');
+ $('#edChips').innerHTML=`<button class="chip ${s.player?'':'on'}" data-p="">Team</button>`+roster(s.team).map(r=>`<button class="chip ${String(s.player)===r.n?'on':''}" data-p="${esc(r.n)}">#${esc(r.n)}${r.name?' '+esc(r.name):''}</button>`).join('')+(s.player&&!roster(s.team).some(r=>r.n===String(s.player))?`<button class="chip on" data-p="${esc(s.player)}">#${esc(s.player)}</button>`:'');
+ $$('#edChips .chip').forEach(b=>b.onclick=()=>{s.player=b.dataset.p||null;save()});
+ if(!d.open)d.show();refresh()}
+function save(){persist();openEdit(ED.id)}
+function closeEdit(){ED.id=null;ED.moving=false;$('#edDlg').open&&$('#edDlg').close();refresh()}
+function edShot(){return G.shots.find(x=>x.id===ED.id)}
+$('#edMake').onclick=()=>{const s=edShot();s.make=true;recalc(s);save()};$('#edMiss').onclick=()=>{const s=edShot();s.make=false;recalc(s);save()};
+$('#edUs').onclick=()=>{const s=edShot();if(s.team!=='us'){s.team='us';s.player=null}save()};$('#edThem').onclick=()=>{const s=edShot();if(s.team!=='them'){s.team='them';s.player=null}save()};
+$('#edDone').onclick=closeEdit;
+$('#edDel').onclick=()=>{const s=edShot();confirmDlg('Delete this shot?',(s.make?'Make':'Miss')+' · '+ZONES[s.zone].n+' at '+fmt(s.t),'Delete',()=>{G.shots=G.shots.filter(x=>x!==s);persist();closeEdit();toast('Shot deleted')})};
+$('#edMove').onclick=()=>{const s=edShot();if(!$('#v-chart').classList.contains('on')){go('chart')}team=s.team;ED.moving=true;ED.tmp={x:s.x,y:s.y};$('#edDlg').close();$('#moveBar').hidden=false;renderChart()};
+$('#mvCancel').onclick=()=>{ED.moving=false;ED.tmp=null;$('#moveBar').hidden=true;openEdit(ED.id)};
 function commit(p,make){ghost&&ghost.remove();ghost=null;const z=classify(p.x,p.y,G.three);const pts=make?(z[1]==='3'?3:2):0;
  G.shots.push({id:uid(),t:elapsed(),period,team,player,x:+p.x.toFixed(2),y:+p.y.toFixed(2),zone:z,make,pts});persist();renderChart();
  navigator.vibrate&&navigator.vibrate(make?[15,30,15]:10);toast((make?'✅ MAKE ':'❌ Miss ')+ZONES[z].n+(player?' · #'+player:''))}
-function undo(){const i=G.shots.map(s=>s.team).lastIndexOf(team);if(i<0)return toast('Nothing to undo');G.shots.splice(i,1);persist();renderChart();toast('Undid last shot')}
+function undo(){if(ED.id)closeEdit();const i=G.shots.map(s=>s.team).lastIndexOf(team);if(i<0)return toast('Nothing to undo');G.shots.splice(i,1);persist();renderChart();toast('Undid last shot')}
 $('#undo').onclick=undo;
 
 // ---------- Chart view ----------
@@ -222,7 +264,7 @@ function tname(t){return t==='us'?G.us:G.them}
 function renderChart(){$('#tUs').textContent=G.us;$('#tThem').textContent=G.them;$('#tUs').classList.toggle('on',team==='us');$('#tThem').classList.toggle('on',team==='them');
  const ch=$('#chips');ch.innerHTML=`<button class="chip ${player?'':'on'}" data-p="">Team</button>`+roster(team).map(r=>`<button class="chip ${player===r.n?'on':''}" data-p="${esc(r.n)}">#${esc(r.n)}${r.name?' '+esc(r.name):''}</button>`).join('');
  ch.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{player=b.dataset.p||null;renderChart()});
- const mine=G.shots.filter(s=>s.team===team);drawCourt(court,mine);
+ const mine=G.shots.filter(s=>s.team===team);drawCourt(court,mine.map(s=>ED.moving&&s.id===ED.id&&ED.tmp?{...s,x:ED.tmp.x,y:ED.tmp.y}:s));const es=ED.id&&mine.find(s=>s.id===ED.id);if(es){const q=ED.moving&&ED.tmp?ED.tmp:es;court.insertAdjacentHTML('beforeend',`<circle class="selring" cx="${q.x}" cy="${q.y}" r="2.4" fill="rgba(255,107,26,.18)" stroke="var(--acc)" stroke-width=".35"/>`)}
  const last=mine[mine.length-1];last&&court.insertAdjacentHTML('beforeend',`<circle cx="${last.x}" cy="${last.y}" r="2" fill="none" stroke="var(--acc)" stroke-width=".25" stroke-dasharray=".6 .4"/>`);
  const m=mine.filter(s=>s.make).length,pts=mine.reduce((a,s)=>a+s.pts,0),good=mine.filter(s=>ZONES[s.zone].q==='good').length;
  $('#tally').innerHTML=`<span>${tname(team)}: ${m}/${mine.length} FG ${mine.length?Math.round(m/mine.length*100):0}%</span><span>${pts} pts</span><span class="g">${mine.length?Math.round(good/mine.length*100):0}% good looks</span>`;
@@ -335,7 +377,8 @@ $('#pbBack').onclick=()=>{pbStop();pb.n=Math.max(0,pb.n-1);pbDraw();markList()};
 $$('#pbSpd button').forEach(b=>b.onclick=()=>{pb.speed=+b.dataset.s;$$('#pbSpd button').forEach(x=>x.classList.toggle('on',x===b))});
 $('#pbArcs').onclick=()=>{showArcs=!showArcs;localStorage.setItem('shotchart.arcs',showArcs?1:0);$('#pbArcs').classList.toggle('on',showArcs);if(!pb.anim)pbDraw()};
 $('#scrub').oninput=e=>{pbStop();hl=null;pb.n=+e.target.value;pbDraw();markList()};
-function renderList(){const L=pbList(),pl=G.periods===2?'H':'Q';$('#slist').innerHTML=L.map((s,i)=>`<div class="it" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'O':'X'}</span><span class="tm">${fmt(s.t)}</span><span>${s.period>G.periods?'OT':pl+s.period}</span><span style="flex:1">${esc(tname(s.team))}${s.player?' #'+esc(s.player):''} · ${ZONES[s.zone].n}</span><b>${s.pts?'+'+s.pts:''}</b></div>`).join('')||'<p class="hint">No shots yet</p>';
+function renderList(){const L=pbList(),pl=G.periods===2?'H':'Q';$('#slist').innerHTML=L.map((s,i)=>`<div class="it" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'O':'X'}</span><span class="tm">${fmt(s.t)}</span><span>${s.period>G.periods?'OT':pl+s.period}</span><span style="flex:1">${esc(tname(s.team))}${s.player?' #'+esc(s.player):''} · ${ZONES[s.zone].n}</span><b>${s.pts?'+'+s.pts:''}</b><button class="ed sm" data-e="${s.id}">✎ Edit</button></div>`).join('')||'<p class="hint">No shots yet</p>';
+ $$('#slist .ed').forEach(b=>b.onclick=ev=>{ev.stopPropagation();pbStop();openEdit(b.dataset.e)});
  $$('#slist .it').forEach(r=>r.onclick=()=>{pbStop();hl=r.dataset.id;pb.n=+r.dataset.i+1;pbDraw();markList();window.scrollTo({top:0,behavior:'smooth'})});markList()}
 function markList(){$$('#slist .it').forEach(r=>r.classList.toggle('hl',hl?r.dataset.id===hl:+r.dataset.i===pb.n-1))}
 function renderTimeline(){$('#pbArcs').classList.toggle('on',showArcs);pbStop();pbFilters();const L=pbList();if(!pb.n||pb.n>L.length)pb.n=L.length;pbDraw();renderList();renderFlow()}
@@ -383,11 +426,11 @@ $('#clkMore').onclick=()=>{const p=$('#clkPanel');p.hidden=!p.hidden};
 $('#hNew').onclick=()=>{const d=$('#ngDlg');$('#ngName').value='Game '+(DB.games.length+1);$('#ngUs').value=G.us;$('#ngThem').value='';$('#ngDate').value=new Date().toISOString().slice(0,10);$('#ngFull').value=G.full?1:0;d.showModal()};
 $('#ngDlg').addEventListener('close',()=>{if($('#ngDlg').returnValue!=='ok')return;const g=newGame();Object.assign(g,{name:$('#ngName').value||g.name,us:$('#ngUs').value||G.us,them:$('#ngThem').value||'Them',date:$('#ngDate').value||g.date,full:$('#ngFull').value==='1',three:G.three,periods:G.periods||4,rosters:JSON.parse(JSON.stringify(G.rosters))});
  DB.games.push(g);period=1;team='us';openGame(g.id);go('chart');toast('New game: '+g.name)});
-function confirmDlg(t,b,ok,fn){$('#cfT').textContent=t;$('#cfB').textContent=b;$('#cfOk').textContent=ok;const d=$('#cfDlg');d.onclose=()=>{d.returnValue==='ok'&&fn()};d.showModal()}
+function confirmDlg(t,b,ok,fn,no){$('#cfT').textContent=t;$('#cfB').textContent=b;$('#cfOk').textContent=ok;const d=$('#cfDlg');d.returnValue='';d.onclose=()=>{d.returnValue==='ok'?fn():no&&no()};d.showModal()}
 $('#hClr').onclick=()=>{if(!G.shots.length)return toast('No shots to clear');confirmDlg('Clear all shots?','Removes all '+G.shots.length+' shots from "'+G.name+'" and resets the clock. Saved games stay.','Clear shots',()=>{G.shots=[];G.clock={running:false,start:0,acc:0,off:0};persist();renderAll();toast('Shots cleared')})};
 
 // ---------- Nav ----------
-function go(v){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='stats')renderStats();if(v!=='time')pbStop();if(v==='time')renderTimeline();if(v==='games')renderGames();if(v==='chart')renderChart();window.scrollTo(0,0)}
+function go(v){if($('#edDlg').open&&v!=='chart'&&v!=='time')closeEdit();$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='stats')renderStats();if(v!=='time')pbStop();if(v==='time')renderTimeline();if(v==='games')renderGames();if(v==='chart')renderChart();window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
 function renderAll(){$('#period').innerHTML=periodOpts();$('#period').value=Math.min(period,(G.periods||4)+1);period=+$('#period').value;renderChart();renderGames();tick()}
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('gesturestart',e=>e.preventDefault());
