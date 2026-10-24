@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<meta charset="utf-8">
+<meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0f1b2d">
+<meta name="theme-color" content="#0f1b2d"><meta name="color-scheme" content="light dark"><script>(()=>{let t=localStorage["shotchart.theme"];if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title><meta name="app-version" content="shotchart-v5-clock">
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v6-theme">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f9e6c4;--court2:#f3d7a6;--cl:#3d2208;--paint:rgba(255,107,26,.22)}
-@media(prefers-color-scheme:dark){:root{--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57;--make:#0fae52;--miss:#e5262c}}
+:root{color-scheme:light}:root[data-theme=dark]{color-scheme:dark;--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57}
+svg.court,.court rect{forced-color-adjust:none}
+.thm{width:52px;height:30px;border-radius:15px;background:#26364f;border:1px solid #3a4e6e;position:relative;padding:0;flex:none;font-size:13px;color:#fff}
+.thm::after{content:"☀";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#ffd34d;color:#5a3a00;line-height:24px;text-align:center;transition:left .2s}
+:root[data-theme=dark] .thm::after{content:"☾";left:24px;background:#cfd8ea;color:#14213a}
+.dial{position:relative;height:200px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;border-radius:12px;background:var(--bg);flex:1;touch-action:pan-y;-webkit-mask:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.dial::-webkit-scrollbar{display:none}.dial div{height:40px;line-height:40px;text-align:center;scroll-snap-align:center;font:700 22px ui-monospace,Menlo,monospace;color:var(--mut)}
+.dial div.on{color:var(--ink);font-size:28px}.dial .pad{height:80px;scroll-snap-align:none}
+.dwrap{position:relative;display:flex;gap:8px;align-items:center}.dwrap::before{content:"";position:absolute;left:0;right:0;top:50%;height:40px;margin-top:-20px;border-top:2px solid var(--acc);border-bottom:2px solid var(--acc);border-radius:8px;pointer-events:none;z-index:1}
+.dlab{font-size:12px;color:var(--mut);text-align:center;margin-top:4px}
+.clkT{font:800 20px/1 ui-monospace,Menlo,Consolas,monospace;background:#0f1b2d;color:#fff;border-color:#0f1b2d;padding:8px 10px;min-width:78px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overscroll-behavior:none}
 body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
@@ -91,13 +101,13 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
 .it .ed{min-height:36px;padding:4px 10px;font-size:13px}
 </style>
 </head><body>
-<header><h1 id="title">Shot Chart</h1><span id="hdrClock" class="tm"></span><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New Game</button></header>
+<header><h1 id="title">Shot Chart</h1><small id="ver" style="opacity:.6;font-size:11px;margin-left:-4px">v6</small><span id="hdrClock" class="tm"></span><button id="thm" class="thm" aria-label="Toggle light/dark"></button><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New Game</button></header>
 
 <section id="v-chart" class="view on">
  <div class="topbar">
   <div class="seg" style="flex:1"><button id="tUs" class="us on"></button><button id="tThem" class="them"></button></div>
   <select id="period" aria-label="Period"></select>
-  <button id="clkBtn" class="clk" aria-label="Start/pause clock"><span id="clkIco">▶</span> <span id="clock">0:00</span></button>
+  <button id="clkBtn" class="clk" style="min-width:52px" aria-label="Start/pause clock"><span id="clkIco">▶</span></button><button id="clkTime" class="clkT" aria-label="Edit clock"><span id="clock">0:00</span></button>
   <button id="clkMore" class="sm ghost" aria-label="Adjust clock">±</button>
  </div>
  <div id="clkPanel" class="row adj" hidden><button class="sm" data-adj="-10">−10s</button><button class="sm" data-adj="-1">−1s</button><button class="sm" data-adj="1">+1s</button><button class="sm" data-adj="10">+10s</button><button class="sm" id="clkSet">Set time…</button><button class="sm" id="nextP2">Next period ▸</button></div>
@@ -132,7 +142,7 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
   <div style="flex:1"><label>Court</label><select id="gFull" style="width:100%"><option value="0">Half court</option><option value="1">Full court</option></select></div></div>
   <div class="row"><div style="flex:1"><label>Our team</label><input id="gUs" style="width:100%"></div><div style="flex:1"><label>Opponent</label><input id="gThem" style="width:100%"></div></div>
   <div class="row"><div style="flex:1"><label>3-pt distance</label><select id="g3" style="width:100%"><option value="19.75">HS / youth 19'9"</option><option value="18">Short 18'0"</option><option value="20.75">Old college 20'9"</option><option value="22.15">College men 22'1¾"</option><option value="23.75">NBA 23'9"</option></select></div>
-  <div style="flex:1"><label>Periods</label><select id="gPer" style="width:100%"><option value="4">Quarters</option><option value="2">Halves</option></select></div><div style="flex:1"><label>Period length (min)</label><input id="gLen" type="number" min="1" max="60" step="1" list="lenPre" style="width:100%"><datalist id="lenPre"><option value="6"><option value="7"><option value="8"><option value="10"><option value="12"><option value="16"><option value="18"><option value="20"></datalist></div></div>
+  <div style="flex:1"><label>Periods</label><select id="gPer" style="width:100%"><option value="4">Quarters</option><option value="2">Halves</option></select></div><div style="flex:1.3"><label>Period length (min)</label><div class="dwrap"><div class="dial" id="gLenDial"></div><input id="gLen" type="number" min="1" max="60" placeholder="custom" style="width:74px"></div></div></div>
   <label>Our roster (one per line: number name)</label><textarea id="rUs" placeholder="3 Jake&#10;11 Marcus"></textarea>
   <label>Opponent roster</label><textarea id="rThem" placeholder="5&#10;23"></textarea>
   <label>Court logo (center circle — kept for future games)</label><div class="row"><span id="logoPrev" style="width:56px;height:56px;border-radius:50%;border:1px solid var(--line);background:var(--court) center/contain no-repeat;display:inline-block"></span><button class="sm" id="logoUp">Upload image</button><button class="sm" id="logoRm">Remove</button><input type="file" id="logoFile" accept="image/*" hidden></div>
@@ -148,6 +158,11 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
 <nav><button data-v="chart" class="on">🏀 Chart</button><button data-v="stats">📊 Stats</button><button data-v="time">▶ Playback</button><button data-v="games">📁 Games</button></nav>
 <div id="toast"></div>
 <div id="moveBar" hidden><span>Drag the shot to its new spot</span><button id="mvCancel" class="sm">Cancel</button></div>
+<dialog id="clkDlg" class="sheet"><div class="sheethd"><b>Clock</b><button id="ckOk" class="pri sm">Apply</button></div>
+ <div class="row" style="margin:6px 0"><div class="seg" style="flex:1"><select id="ckPer" style="width:100%"><option value="4">Quarters</option><option value="2">Halves</option></select></div><input id="ckLenC" type="number" min="1" max="60" placeholder="custom min" style="width:110px"></div>
+ <div class="row" style="gap:14px;align-items:flex-start"><div style="flex:1"><div class="dwrap"><div class="dial" id="ckLen"></div></div><div class="dlab">Period length (min)</div></div>
+ <div style="flex:1.4"><div class="dwrap"><div class="dial" id="ckM"></div><b>:</b><div class="dial" id="ckS"></div></div><div class="dlab" id="ckRemL">Time left</div></div></div>
+ <button id="ckCancel" class="sm ghost" style="width:100%;margin-top:8px">Cancel</button></dialog>
 <dialog id="edDlg" class="sheet"><div class="sheethd"><b id="edT"></b><button id="edDone" class="pri sm">Done</button></div>
  <div class="seg"><button id="edMake" class="mk">◯ Make</button><button id="edMiss" class="ms">✕ Miss</button></div>
  <label>Team</label><div class="seg"><button id="edUs" class="us"></button><button id="edThem" class="them"></button></div>
@@ -359,7 +374,6 @@ function pose(F,c,h,a,w){const dy=c*.28;F.lift.setAttribute('transform',`transla
 function arcPts(s,sx,sy){const hp=hoopOf(s),dx=hp.x-sx,dy=hp.y-sy;return u=>({x:sx+dx*u,y:sy+dy*u})}
 function relPt(s){return{x:s.x,y:figY(s)+1.6*(-3.95-.9)}}
 function arcPath(s){const r={x:s.x,y:s.y},h=hoopOf(s);return `M${r.x.toFixed(2)} ${r.y.toFixed(2)}L${h.x} ${h.y}`}
-function arcPathOld(s,n=16){const r=relPt(s),f=arcPts(s,r.x,r.y);let d='';for(let i=0;i<=n;i++){const p=f(i/n);d+=(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)}return d}
 let showArcs=localStorage.getItem('shotchart.arcs')!=='0';
 function arcsSVG(L){return showArcs?L.map(s=>`<path d="${arcPath(s)}" fill="none" stroke="${s.make?'var(--make)':'var(--miss)'}" stroke-width=".22" stroke-linecap="round" opacity=".38"/>`).join(''):''}
 const TN=16;
@@ -376,10 +390,10 @@ function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':
   const arm=ease(seg(t,.18,.3)),wr=seg(t,.3,.38)*(1-seg(t,.55,.7)*.6);
   const bp=pose(F,Math.max(dip,crouchLand),h,arm,wr);
   if(t<.3){ball.setAttribute('cx',(ox+bp.x*1.6).toFixed(2));ball.setAttribute('cy',(oy+bp.y*1.6).toFixed(2))}
-  else if(t<.72){const u=ease(seg(t,.3,.72)),p=arc(u),ht=Math.sin(u*Math.PI);ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',(p.y-ht*.9).toFixed(2));ball.setAttribute('r',(.55+ht*.28).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',(p.y+.3).toFixed(2));bshd.setAttribute('rx',(.5-ht*.15).toFixed(2));bshd.setAttribute('opacity',(1-ht*.5).toFixed(2));hist.unshift({x:p.x,y:p.y-ht*.9})}
+  else if(t<.72){const u=ease(seg(t,.3,.72)),p=arc(u),ht=Math.sin(u*Math.PI);ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('r',(.55+ht*.28).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',p.y.toFixed(2));bshd.setAttribute('rx',(.55+ht*.5).toFixed(2));bshd.setAttribute('ry',(.55+ht*.5).toFixed(2));bshd.setAttribute('opacity',(1-ht*.5).toFixed(2));hist.unshift({x:p.x,y:p.y})}
   else{const u=(t-.72)/.28,dir=hp.y>47?-1:1;ball.setAttribute('r','.55');
    if(s.make){bshd.setAttribute('opacity',0);ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*dir);ball.setAttribute('opacity',(1-u).toFixed(2));net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
-   else{const L=Math.hypot(hp.x-r.x,hp.y-r.y)||1,bx=(r.x-hp.x)/L,by=(r.y-hp.y)/L,hop=Math.abs(Math.sin(u*Math.PI*2))*(1-u)*.7,p={x:hp.x+bx*u*2.6,y:hp.y+by*u*2.6-hop};bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',(p.y+hop+.3).toFixed(2));ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
+   else{const L=Math.hypot(hp.x-r.x,hp.y-r.y)||1,bx=(r.x-hp.x)/L,by=(r.y-hp.y)/L,hop=Math.abs(Math.sin(u*Math.PI*2))*(1-u)*.7,p={x:hp.x+bx*u*2.6,y:hp.y+by*u*2.6};ball.setAttribute('r',(.55+hop*.3).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
    fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-cl((u-.4)/.6)*.9).toFixed(2));hist.unshift(hist[0])}
   if(hist.length>TN*2)hist.length=TN*2;const fade=t>.72?1-seg(t,.8,1):1;
   trail.forEach((e,i)=>{const p=hist[i*2];if(!p){e.setAttribute('opacity',0);return}e.setAttribute('cx',p.x.toFixed(2));e.setAttribute('cy',p.y.toFixed(2));e.setAttribute('opacity',((1-i/TN)*.75*fade).toFixed(2))});
@@ -408,12 +422,12 @@ function renderFlow(){const sh=G.shots.slice().sort((a,b)=>a.t-b.t);if(!sh.lengt
 // ---------- Games / setup ----------
 function parseRoster(t){return t.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^#?(\w+)\s*(.*)$/);return{n:m[1],name:m[2]||''}})}
 function rosterText(a){return a.map(r=>r.n+(r.name?' '+r.name:'')).join('\n')}
-function renderGames(){logoPrev();$('#gName').value=G.name;$('#gDate').value=G.date;$('#gFull').value=G.full?1:0;$('#gUs').value=G.us;$('#gThem').value=G.them;$('#g3').value=String(G.three);$('#gPer').value=String(G.periods||4);$('#gLen').value=G.plen||(G.periods===2?16:8);$('#rUs').value=rosterText(G.rosters.us);$('#rThem').value=rosterText(G.rosters.them);
+function renderGames(){logoPrev();$('#gName').value=G.name;$('#gDate').value=G.date;$('#gFull').value=G.full?1:0;$('#gUs').value=G.us;$('#gThem').value=G.them;$('#g3').value=String(G.three);$('#gPer').value=String(G.periods||4);{const L=lenNow();$('#gLen').value=L>20?L:'';requestAnimationFrame(()=>mkDial($('#gLenDial'),1,20,Math.min(L,20)))}$('#rUs').value=rosterText(G.rosters.us);$('#rThem').value=rosterText(G.rosters.them);
  $('#glist').innerHTML=DB.games.slice().sort((a,b)=>b.created-a.created).map(g=>`<div class="gi"><div><b>${esc(g.name)}</b>${g.id===G.id?' <span class="g">(open)</span>':''}<br><small>${esc(g.date)} · ${esc(g.us)} vs ${esc(g.them)} · ${g.shots.length} shots</small></div><button class="sm" data-o="${g.id}">Open</button><button class="sm" data-d="${g.id}">Dup</button><button class="sm" data-x="${g.id}">🗑</button></div>`).join('');
  $$('[data-o]').forEach(b=>b.onclick=()=>{openGame(b.dataset.o);go('chart')});
  $$('[data-d]').forEach(b=>b.onclick=()=>{const s=DB.games.find(g=>g.id===b.dataset.d);const c=JSON.parse(JSON.stringify(s));c.id=uid();c.name+=' (copy)';c.created=Date.now();c.clock.running=false;DB.games.push(c);persist();renderGames();toast('Duplicated')});
  $$('[data-x]').forEach(b=>b.onclick=()=>{const g=DB.games.find(x=>x.id===b.dataset.x);if(!confirm('Delete "'+g.name+'" and its '+g.shots.length+' shots?'))return;DB.games=DB.games.filter(x=>x!==g);if(!DB.games.length)DB.games.push(newGame());if(g===G)G=DB.games[0];DB.cur=G.id;persist();renderAll()})}
-$('#save').onclick=()=>{const R=+$('#g3').value,full=$('#gFull').value==='1';Object.assign(G,{name:$('#gName').value||'Game',date:$('#gDate').value,full,us:$('#gUs').value||'Us',them:$('#gThem').value||'Them',periods:+$('#gPer').value,plen:Math.max(1,Math.min(60,+$('#gLen').value||8)),rosters:{us:parseRoster($('#rUs').value),them:parseRoster($('#rThem').value)}});
+$('#save').onclick=()=>{const R=+$('#g3').value,full=$('#gFull').value==='1';Object.assign(G,{name:$('#gName').value||'Game',date:$('#gDate').value,full,us:$('#gUs').value||'Us',them:$('#gThem').value||'Them',periods:+$('#gPer').value,plen:+$('#gLen').value>0?Math.min(60,+$('#gLen').value):dialVal($('#gLenDial')),rosters:{us:parseRoster($('#rUs').value),them:parseRoster($('#rThem').value)}});
  if(R!==G.three){G.three=R;G.shots.forEach(s=>{s.zone=classify(s.x,s.y,R);s.pts=s.make?(s.zone[1]==='3'?3:2):0})}
  if(!full)G.shots.forEach(s=>{if(s.y>47)s.y=+(94-s.y).toFixed(2)});persist();renderAll();toast('Saved')};
 $('#newG').onclick=()=>{const g=newGame();if(G){g.us=G.us;g.rosters.us=JSON.parse(JSON.stringify(G.rosters.us));g.three=G.three;g.periods=G.periods;g.plen=G.plen}DB.games.push(g);openGame(g.id);go('games');toast('New game created')};
@@ -438,6 +452,28 @@ function pngBlob(){return new Promise(res=>{const svg=document.createElementNS('
  const img=new Image();img.onload=()=>{c.drawImage(img,0,head,51*S,(H+1)*S);cv.toBlob(res,'image/png')};img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str.replace('<svg','<svg width="'+51*S+'" height="'+(H+1)*S+'"'))})}
 $('#xPng').onclick=async()=>dl(slug()+'-'+team+'-shotchart.png',await pngBlob(),'image/png');
 
+// ---------- Theme ----------
+$('#thm').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;localStorage['shotchart.theme']=t};
+// ---------- Dials ----------
+function mkDial(el,min,max,val,fmtv=v=>v,onch){el.innerHTML='<div class="pad"></div>'+Array.from({length:max-min+1},(_,i)=>`<div>${fmtv(i+min)}</div>`).join('')+'<div class="pad"></div>';el._min=min;el._max=max;
+ const mark=()=>{const v=dialVal(el);[...el.children].forEach((c,i)=>c.classList.toggle('on',i-1===v-min));if(el._v!==v){el._v=v;onch&&onch(v)}};
+ el.onscroll=()=>{cancelAnimationFrame(el._r);el._r=requestAnimationFrame(mark)};
+ [...el.children].forEach((c,i)=>{if(i&&i<=max-min+1)c.onclick=()=>el.scrollTo({top:(i-1)*40,behavior:'smooth'})});
+ setDial(el,val)}
+function dialVal(el){return Math.max(el._min,Math.min(el._max,Math.round(el.scrollTop/40)+el._min))}
+const dRO=new ResizeObserver(es=>es.forEach(e=>{const el=e.target;if(el.clientHeight&&el._want!=null)setDial(el,el._want)}));
+function setDial(el,v){v=Math.max(el._min,Math.min(el._max,v));el._want=el.clientHeight?null:v;dRO.observe(el);el.scrollTop=(v-el._min)*40;el._v=null;el.onscroll()}
+const p2=v=>String(v).padStart(2,'0');
+function lenNow(){return G.plen||(G.periods===2?16:8)}
+$('#clkTime').onclick=()=>{if(G.clock.running)return toast('Pause the clock to edit');const d=$('#clkDlg');d.showModal();
+ $('#ckPer').value=String(G.periods||4);const L=lenNow();$('#ckLenC').value=L>20?L:'';
+ const r=Math.ceil(remain()/1000);
+ mkDial($('#ckLen'),1,20,Math.min(L,20),v=>v,v=>{if(!$('#ckLenC').value)mkDial($('#ckM'),0,v,Math.min(dialVal($('#ckM')),v),p2)});
+ mkDial($('#ckM'),0,Math.max(L,Math.floor(r/60)),Math.floor(r/60),p2);mkDial($('#ckS'),0,59,r%60,p2);$('#ckRemL').textContent='Time left in '+perL(period)};
+$('#ckLenC').oninput=()=>{const v=+$('#ckLenC').value;if(v>0)mkDial($('#ckM'),0,v,Math.min(dialVal($('#ckM')),v),p2)};
+$('#ckCancel').onclick=()=>$('#clkDlg').close();
+$('#ckOk').onclick=()=>{const c=+$('#ckLenC').value;G.periods=+$('#ckPer').value;G.plen=c>0?Math.min(60,c):dialVal($('#ckLen'));
+ const t=Math.min(dialVal($('#ckM'))*60+dialVal($('#ckS')),G.plen*60);G.clock.off+=(plen()-t*1000-elapsed())/1000;persist();$('#clkDlg').close();renderAll();toast(perL(period)+' · '+fmtR(remain())+' left')};
 // ---------- Logo ----------
 function logoPrev(){$('#logoPrev').style.backgroundImage=DB.logo?`url(${DB.logo})`:'none';$('#logoPrev').textContent=DB.logo?'':'';$('#logoRm').disabled=!DB.logo}
 $('#logoUp').onclick=()=>$('#logoFile').click();
@@ -460,4 +496,7 @@ document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});docu
 renderAll();
 window.__test={pb,classify,get G(){return G},csv,tsList,pngBlob};
 </script>
+<div id="updBar" hidden style="position:fixed;top:0;left:0;right:0;z-index:99;background:#ff6b1a;color:#fff;text-align:center;padding:12px;font-weight:800" onclick="location.replace(location.pathname+'?v='+Date.now())">New version available — tap to reload</div>
+<script>(()=>{const me=document.querySelector('meta[name=app-version]').content;async function chk(){try{const t=await(await fetch(location.pathname+'?ts='+Date.now(),{cache:'no-store'})).text(),m=t.match(/name="app-version" content="([^"]+)"/);if(m&&m[1]!==me)document.getElementById('updBar').hidden=false}catch(e){}}
+if(location.protocol.startsWith('http')){chk();setInterval(chk,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk()})}})()</script>
 </body></html>
