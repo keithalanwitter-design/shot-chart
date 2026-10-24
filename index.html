@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title>
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v2-playback">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f1d6a8;--cl:#5b3a17}
 @media(prefers-color-scheme:dark){:root{--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57;--court:#2b2418;--cl:#f3d9b0;--make:#2fdc7a;--miss:#ff5257}}
@@ -51,25 +51,53 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
 #toast.on{opacity:1}
 .gi{display:flex;align-items:center;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}.gi div{flex:1}.gi small{color:var(--mut)}
 .tm{font-family:ui-monospace,Menlo,monospace;font-weight:700}
+
+body{font-size:17px}
+header{gap:6px;padding:8px 10px;padding-top:max(8px,env(safe-area-inset-top))}
+.hb{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);min-height:38px;padding:6px 10px;font-size:14px;border-radius:10px}
+.hb.new{background:var(--acc);border-color:var(--acc)}
+#hdrClock{font-size:13px;opacity:.8}
+.view.on{animation:fade .22s ease}@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+button{transition:transform .08s,background .15s,color .15s}button:active{transform:scale(.96)}
+.topbar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.topbar select{min-height:46px;padding:6px 8px;font-weight:700}
+.clk{font:800 20px/1 ui-monospace,Menlo,Consolas,monospace;background:#0f1b2d;color:#fff;border-color:#0f1b2d;padding:8px 10px;min-width:96px}
+.clk.run{background:var(--make);border-color:var(--make)}
+.ghost{background:transparent}
+[hidden]{display:none!important}.adj{justify-content:center}
+.seg button{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%;padding:8px 6px}
+.chips{margin-bottom:4px}.chip{min-height:42px;font-weight:700}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#courtWrap svg{box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.hintbar{display:flex;justify-content:space-around;font-size:13px;font-weight:700;color:var(--mut);margin:8px 0}
+.hintbar i{font-style:normal;font-weight:900}.hintbar .x{color:var(--miss)}.hintbar .o{color:var(--make)}
+.tally{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 8px}
+button.danger{background:var(--miss);color:#fff;border-color:var(--miss)}
+dialog{border:0;border-radius:18px;background:var(--card);color:var(--ink);width:min(92vw,420px);padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(5,10,20,.55)}dialog h2{margin:0 0 6px;font-size:20px}
+dialog[open]{animation:fade .2s ease}
+.pbhud{display:flex;justify-content:space-between;align-items:center;background:#0f1b2d;color:#fff;border-radius:12px 12px 0 0;padding:8px 12px;font-weight:800;font-size:15px}
+.pbhud .sc b{color:var(--acc)}.pbhud .tm{font-size:18px}
+#rcourt{border-radius:0 0 10px 10px}
+.pbctl{display:flex;gap:6px;align-items:center;margin:10px 0 4px}.pbctl>button{min-width:52px;font-size:18px}#pbPlay{flex:1}
+.spd button{padding:6px 5px;min-width:34px;min-height:46px;font-size:14px}
 </style>
 </head><body>
-<header><h1 id="title">Shot Chart</h1><span id="hdrClock" class="tm"></span></header>
+<header><h1 id="title">Shot Chart</h1><span id="hdrClock" class="tm"></span><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New Game</button></header>
 
 <section id="v-chart" class="view on">
- <div class="row">
+ <div class="topbar">
   <div class="seg" style="flex:1"><button id="tUs" class="us on"></button><button id="tThem" class="them"></button></div>
-  <select id="period"></select>
+  <select id="period" aria-label="Period"></select>
+  <button id="clkBtn" class="clk" aria-label="Start/pause clock"><span id="clkIco">▶</span> <span id="clock">0:00</span></button>
+  <button id="clkMore" class="sm ghost" aria-label="Adjust clock">±</button>
  </div>
- <div class="row" style="justify-content:space-between">
-  <button id="clkBtn" class="pri" style="min-width:96px">Start</button>
-  <span id="clock" class="clock">0:00</span>
-  <button class="sm" data-adj="-10">−10s</button><button class="sm" data-adj="10">+10s</button><button class="sm" id="clkSet">Set</button>
- </div>
+ <div id="clkPanel" class="row adj" hidden><button class="sm" data-adj="-10">−10s</button><button class="sm" data-adj="-1">−1s</button><button class="sm" data-adj="1">+1s</button><button class="sm" data-adj="10">+10s</button><button class="sm" id="clkSet">Set time…</button></div>
  <div class="chips" id="chips"></div>
  <div id="courtWrap"><svg class="court" id="court"></svg></div>
- <div class="hint">Tap = miss · Double-tap = make · Long-press = undo</div>
- <div class="row"><button id="undo" style="flex:1">↶ Undo last</button><button id="flip" class="sm">Swap</button></div>
+ <div class="hintbar"><span><i class="x">✕</i> Tap = miss</span><span><i class="o">◯</i> Double-tap = make</span><span>Hold = undo</span></div>
  <div class="tally" id="tally"></div>
+ <div class="row"><button id="undo" style="flex:1">↶ Undo last</button><button id="flip">⇄ Switch team</button></div>
 </section>
 
 <section id="v-stats" class="view">
@@ -78,8 +106,12 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
 </section>
 
 <section id="v-time" class="view">
- <div class="row"><select id="tTeam"></select><button id="replay" class="pri">▶ Replay</button><input type="range" id="scrub" min="0" max="0" value="0" style="flex:1"></div>
+ <div class="row"><select id="pbTeam" style="flex:1"></select><select id="pbPlayer" style="flex:1"></select></div>
+ <div class="pbhud" id="pbHud"></div>
  <svg class="court" id="rcourt"></svg>
+ <div class="pbctl"><button id="pbBack" aria-label="Step back">⏮</button><button id="pbPlay" class="pri" aria-label="Play">▶ Play</button><button id="pbFwd" aria-label="Step forward">⏭</button>
+  <div class="seg spd" id="pbSpd"><button data-s=".5">½×</button><button data-s="1" class="on">1×</button><button data-s="2">2×</button><button data-s="4">4×</button></div></div>
+ <input type="range" id="scrub" min="0" max="0" value="0" style="width:100%">
  <div class="card"><h3>Game flow (cumulative points)</h3><div id="flow"></div></div>
  <div class="card"><h3>Shots in order</h3><div class="list" id="slist"></div></div>
 </section>
@@ -90,7 +122,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
   <div class="row"><div style="flex:1"><label>Date</label><input id="gDate" type="date" style="width:100%"></div>
   <div style="flex:1"><label>Court</label><select id="gFull" style="width:100%"><option value="0">Half court</option><option value="1">Full court</option></select></div></div>
   <div class="row"><div style="flex:1"><label>Our team</label><input id="gUs" style="width:100%"></div><div style="flex:1"><label>Opponent</label><input id="gThem" style="width:100%"></div></div>
-  <div class="row"><div style="flex:1"><label>3-pt distance</label><select id="g3" style="width:100%"><option value="19.75">HS / youth 19'9"</option><option value="18">Short 18'0"</option><option value="20.75">College 22'1¾"→20'9"</option><option value="22.15">College men 22'1¾"</option><option value="23.75">NBA 23'9"</option></select></div>
+  <div class="row"><div style="flex:1"><label>3-pt distance</label><select id="g3" style="width:100%"><option value="19.75">HS / youth 19'9"</option><option value="18">Short 18'0"</option><option value="20.75">Old college 20'9"</option><option value="22.15">College men 22'1¾"</option><option value="23.75">NBA 23'9"</option></select></div>
   <div style="flex:1"><label>Periods</label><select id="gPer" style="width:100%"><option value="4">Quarters</option><option value="2">Halves</option></select></div></div>
   <label>Our roster (one per line: number name)</label><textarea id="rUs" placeholder="3 Jake&#10;11 Marcus"></textarea>
   <label>Opponent roster</label><textarea id="rThem" placeholder="5&#10;23"></textarea>
@@ -103,8 +135,15 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
  <div class="card"><h3>Saved games</h3><div id="glist"></div></div>
 </section>
 
-<nav><button data-v="chart" class="on">🏀 Chart</button><button data-v="stats">📊 Stats</button><button data-v="time">⏱ Timeline</button><button data-v="games">📁 Games</button></nav>
+<nav><button data-v="chart" class="on">🏀 Chart</button><button data-v="stats">📊 Stats</button><button data-v="time">▶ Playback</button><button data-v="games">📁 Games</button></nav>
 <div id="toast"></div>
+<dialog id="ngDlg"><form method="dialog" id="ngForm"><h2>New game</h2>
+ <label>Game name</label><input id="ngName" style="width:100%">
+ <div class="row"><div style="flex:1"><label>Our team</label><input id="ngUs" style="width:100%"></div><div style="flex:1"><label>Opponent</label><input id="ngThem" style="width:100%"></div></div>
+ <div class="row"><div style="flex:1"><label>Date</label><input id="ngDate" type="date" style="width:100%"></div><div style="flex:1"><label>Court</label><select id="ngFull" style="width:100%"><option value="0">Half court</option><option value="1">Full court</option></select></div></div>
+ <small style="color:var(--mut)">Rosters, 3-pt line and periods copy from your last game. Edit in Games.</small>
+ <div class="row" style="margin-top:12px"><button value="cancel" style="flex:1">Cancel</button><button value="ok" class="pri" style="flex:2">Start game</button></div></form></dialog>
+<dialog id="cfDlg"><form method="dialog"><h2 id="cfT"></h2><p id="cfB"></p><div class="row"><button value="cancel" style="flex:1">Cancel</button><button value="ok" class="danger" style="flex:1" id="cfOk">Clear</button></div></form></dialog>
 
 <script>
 // ---------- PWA manifest (inline) ----------
@@ -129,7 +168,7 @@ function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
 // ---------- Clock ----------
 function elapsed(c=G.clock){return Math.max(0,c.acc+(c.running?Date.now()-c.start:0)+c.off*1000)}
 function fmt(ms){const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-function tick(){$('#clock').textContent=fmt(elapsed());$('#hdrClock').textContent=G.clock.running?'● '+fmt(elapsed()):'';$('#clkBtn').textContent=G.clock.running?'Pause':(G.clock.acc||G.clock.off?'Resume':'Start')}
+function tick(){$('#clock').textContent=fmt(elapsed());$('#hdrClock').textContent='';$('#clkIco').textContent=G.clock.running?'❚❚':'▶';$('#clkBtn').classList.toggle('run',G.clock.running)}
 setInterval(tick,250);
 $('#clkBtn').onclick=()=>{const c=G.clock;if(c.running){c.acc+=Date.now()-c.start;c.running=false}else{c.start=Date.now();c.running=true}persist();tick()};
 $$('[data-adj]').forEach(b=>b.onclick=()=>{G.clock.off+=+b.dataset.adj;persist();tick()});
@@ -143,7 +182,7 @@ function courtSVG(full,R){const H=full?94:47;let s=`<rect x="0" y="0" width="50"
   o+=`<circle cx="25" cy="${T(19)}" r="6" fill="none" stroke="var(--cl)"/>`;
   o+=`<path d="M21 ${T(HY)} A4 4 0 0 ${flip?1:0} 29 ${T(HY)}" fill="none" stroke="var(--cl)"/>`;
   const xl=25-R,xr=25+R;o+=`<path d="M${xl} ${T(0)} L${xl} ${T(HY)} A${R} ${R} 0 0 ${sw} ${xr} ${T(HY)} L${xr} ${T(0)}" fill="none" stroke="var(--cl)" stroke-width=".35"/>`;
-  o+=`<line x1="22" x2="28" y1="${T(4)}" y2="${T(4)}" stroke="var(--cl)" stroke-width=".4"/><circle cx="25" cy="${T(HY)}" r=".75" fill="none" stroke="#ff6b1a" stroke-width=".3"/>`;return o};
+  o+=`<line x1="22" x2="28" y1="${T(4)}" y2="${T(4)}" stroke="var(--cl)" stroke-width=".4"/><path class="net" style="transform-box:fill-box;transform-origin:50% 0" d="M24.3 ${T(HY)} L24.6 ${T(HY+1.6)} L25.4 ${T(HY+1.6)} L25.7 ${T(HY)} M24.8 ${T(HY)}L24.9 ${T(HY+1.6)}M25.2 ${T(HY)}L25.1 ${T(HY+1.6)}" fill="none" stroke="#fff" stroke-width=".12" opacity=".85"/><circle cx="25" cy="${T(HY)}" r=".75" fill="none" stroke="#ff6b1a" stroke-width=".3"/>`;return o};
  s+=half(false);if(full)s+=half(true);
  s+=`<rect x="0" y="0" width="50" height="${H}" fill="none" stroke="var(--cl)" stroke-width=".4"/>`;
  s+=full?`<line x1="0" x2="50" y1="47" y2="47" stroke="var(--cl)"/><circle cx="25" cy="47" r="6" fill="none" stroke="var(--cl)"/>`:`<path d="M19 47 A6 6 0 0 1 31 47" fill="none" stroke="var(--cl)"/>`;
@@ -216,19 +255,55 @@ function renderStats(){fillFilters();const sh=filt($('#fTeam').value,$('#fPlayer
  $('#stats').innerHTML=h;const zc=document.createElementNS('http://www.w3.org/2000/svg','svg');zc.setAttribute('class','court');$('#zc').appendChild(zc);
  const keep=G.full;G.full=false;drawCourt(zc,sh.map(s=>s.y>47?{...s,y:94-s.y}:s).map(s=>({...s})),'');zc.querySelectorAll('circle[stroke-width=".5"],path[stroke-width=".5"]').forEach(e=>e.setAttribute('opacity','.35'));zc.insertAdjacentHTML('beforeend',hm);G.full=keep}
 
-// ---------- Timeline ----------
-let hl=null,rp=null;
-function tlShots(){const t=$('#tTeam').value||'all';return G.shots.filter(s=>t==='all'||s.team===t).slice().sort((a,b)=>a.t-b.t)}
-function renderTimeline(){const tv=$('#tTeam').value||'all';$('#tTeam').innerHTML=`<option value="all">Both teams</option><option value="us">${esc(G.us)}</option><option value="them">${esc(G.them)}</option>`;$('#tTeam').value=tv;
- const sh=tlShots();const sc=$('#scrub');sc.max=sh.length;if(+sc.value>sh.length||!rp)sc.value=sh.length;drawReplay(+sc.value);
- const pl=(G.periods===2?'H':'Q');$('#slist').innerHTML=sh.map((s,i)=>`<div class="it ${hl===s.id?'hl':''}" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'O':'X'}</span><span class="tm">${fmt(s.t)}</span><span>${s.period>G.periods?'OT':pl+s.period}</span><span style="flex:1">${esc(tname(s.team))}${s.player?' #'+esc(s.player):''} · ${ZONES[s.zone].n}</span><b>${s.pts?'+'+s.pts:''}</b></div>`).join('')||'<p class="hint">No shots yet</p>';
- $$('#slist .it').forEach(r=>r.onclick=()=>{hl=r.dataset.id;$('#scrub').value=+r.dataset.i+1;renderTimeline()});renderFlow()}
-function drawReplay(n){const sh=tlShots().slice(0,n);const svg=$('#rcourt');drawCourt(svg,[]);const t=$('#tTeam').value;
- svg.insertAdjacentHTML('beforeend',sh.map((s,i)=>{let m=marker(s);if(t==='all'&&s.team==='them')m=m.replace(/stroke="var\(--(make|miss)\)"/,`stroke="var(--$1)" stroke-dasharray=".5 .3"`);return m}).join(''));
- const cur=hl?sh.find(s=>s.id===hl):sh[sh.length-1];cur&&svg.insertAdjacentHTML('beforeend',`<circle cx="${cur.x}" cy="${cur.y}" r="2.2" fill="none" stroke="var(--acc)" stroke-width=".35"/><text x="1" y="${(G.full?94:47)-1}" font-size="2.4" font-weight="800" fill="var(--cl)">${fmt(cur.t)} · ${esc(tname(cur.team))}${cur.player?' #'+esc(cur.player):''} ${cur.make?'MAKE':'miss'}</text>`)}
-$('#scrub').oninput=e=>{hl=null;drawReplay(+e.target.value)};$('#tTeam').onchange=()=>{hl=null;$('#scrub').value=9999;renderTimeline()};
-$('#replay').onclick=()=>{if(rp){clearInterval(rp);rp=null;$('#replay').textContent='▶ Replay';return}const n=tlShots().length;let i=0;hl=null;$('#replay').textContent='■ Stop';
- rp=setInterval(()=>{i++;$('#scrub').value=i;drawReplay(i);if(i>=n){clearInterval(rp);rp=null;$('#replay').textContent='▶ Replay'}},450)};
+// ---------- Playback ----------
+const NS='http://www.w3.org/2000/svg';let pb={n:0,playing:false,speed:1,raf:null,anim:false},hl=null;
+function pbList(){const t=$('#pbTeam').value||'both',p=$('#pbPlayer').value;return G.shots.filter(s=>(t==='both'||s.team===t)&&(!p||String(s.player)===p)).slice().sort((a,b)=>a.t-b.t)}
+function pbFilters(){const t=$('#pbTeam').value||'both';$('#pbTeam').innerHTML=`<option value="both">Both teams</option><option value="us">${esc(G.us)}</option><option value="them">${esc(G.them)}</option>`;$('#pbTeam').value=t;
+ const p=$('#pbPlayer').value;const ps=[...new Set(G.shots.filter(s=>t==='both'||s.team===t).map(s=>s.player).filter(Boolean))].sort((a,b)=>a-b);
+ $('#pbPlayer').innerHTML='<option value="">Whole team</option>'+ps.map(x=>`<option value="${esc(x)}">#${esc(x)}</option>`).join('');$('#pbPlayer').value=ps.includes(p)?p:''}
+['#pbTeam','#pbPlayer'].forEach(id=>$(id).onchange=()=>{pbStop();pbFilters();pb.n=0;pbDraw();renderList()});
+function hoopOf(s){return{x:25,y:s.y>47?94-HY:HY}}
+function pbDraw(){const L=pbList();pb.n=Math.min(pb.n,L.length);const sv=$('#rcourt');drawCourt(sv,L.slice(0,pb.n));sv.insertAdjacentHTML('beforeend','<g id="fx"></g>');$('#scrub').max=L.length;$('#scrub').value=pb.n;pbHud(L,pb.n,L[pb.n-1]);
+ const cur=hl&&L.slice(0,pb.n).find(s=>s.id===hl);cur&&sv.insertAdjacentHTML('beforeend',`<circle cx="${cur.x}" cy="${cur.y}" r="2.2" fill="none" stroke="var(--acc)" stroke-width=".35"/>`)}
+function pbHud(L,n,cur){const d=L.slice(0,n),sc={us:0,them:0};d.forEach(s=>sc[s.team]+=s.pts);const m=d.filter(s=>s.make).length,pl=G.periods===2?'H':'Q';
+ $('#pbHud').innerHTML=`<span class="sc">${esc(G.us)} <b>${sc.us}</b> · ${esc(G.them)} <b>${sc.them}</b></span><span>FG ${m}/${d.length} ${pct(m,d.length)}</span><span class="tm">${cur?(cur.period>G.periods?'OT':pl+cur.period)+' '+fmt(cur.t):'0:00'}</span>`}
+function figure(s){const col=s.team==='us'?'var(--us)':'var(--them)',hp=hoopOf(s);const flip=s.x>25?-1:1;
+ return `<g class="fig" transform="translate(${s.x} ${s.y>47?Math.min(s.y,89.4):Math.max(s.y,4.6)}) scale(1.6)"><g class="pop"><ellipse cx="0" cy=".2" rx="1.1" ry=".35" fill="rgba(0,0,0,.25)"/>
+ <path d="M-.35 -.2L-.5 .15M.35 -.2L.5 .15" stroke="#222" stroke-width=".32" stroke-linecap="round"/>
+ <rect x="-.75" y="-2" width="1.5" height="1.85" rx=".45" fill="${col}" stroke="#fff" stroke-width=".12"/>
+ ${s.player?`<text x="0" y="-.7" font-size=".95" font-weight="900" text-anchor="middle" fill="#fff">${esc(s.player)}</text>`:''}
+ <circle cx="0" cy="-2.65" r=".62" fill="#c98b5a" stroke="#5b3a17" stroke-width=".08"/><circle cx="-.2" cy="-2.72" r=".09" fill="#111"/><circle cx=".2" cy="-2.72" r=".09" fill="#111"/>
+ <g class="arms"><path d="M-.6 -1.8L-.7 -3.3M.6 -1.8L.7 -3.3" stroke="${col}" stroke-width=".32" stroke-linecap="round"/></g></g></g>`}
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function animShot(s,done){pb.anim=true;const fx=$('#fx');fx.innerHTML=figure(s)+`<circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="${s.x}" cy="${Math.max(s.y,4.6)-5.4}"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
+ const sv=$('#rcourt'),pop=fx.querySelector('.pop'),arms=fx.querySelector('.arms'),ball=fx.querySelector('#ball'),fl=fx.querySelector('#flash'),hp=hoopOf(s);
+ const nets=[...sv.querySelectorAll('.net')],net=nets.length>1&&s.y>47?nets[1]:nets[0];
+ const D=1700/pb.speed,t0=performance.now(),sx=s.x,sy=Math.max(s.y,4.6)-5.4,dist=Math.hypot(hp.x-sx,hp.y-sy),peak=Math.max(3,dist*.45);
+ const side=(s.x<=25?1:-1),col=s.make?'var(--make)':'var(--miss)';fl.setAttribute('cx',hp.x);fl.setAttribute('cy',hp.y);fl.setAttribute('stroke',col);
+ function f(now){const t=Math.min(1,(now-t0)/D);
+  const pp=Math.min(1,t/.15),sc=pp<1?1.25*Math.sin(pp*Math.PI/2)*(pp<.8?1:1):1;pop.setAttribute('transform',`scale(${(t<.15?sc:1).toFixed(3)})`);
+  const sh=t<.2?0:t<.32?(t-.2)/.12:1;pop.setAttribute('transform',`scale(${t<.15?sc.toFixed(3):1}) translate(0 ${(-Math.sin(Math.min(1,sh)*Math.PI)*.6).toFixed(2)})`);
+  arms.setAttribute('transform',`rotate(${(sh*-10).toFixed(1)})`);
+  if(t<.3){ball.setAttribute('cy',sy-sh*.5)}
+  else if(t<.72){const u=ease((t-.3)/.42);ball.setAttribute('cx',sx+(hp.x-sx)*u);ball.setAttribute('cy',sy+(hp.y-sy)*u-Math.sin(u*Math.PI)*peak);ball.setAttribute('r',(.55+Math.sin(u*Math.PI)*.35).toFixed(3))}
+  else{const u=(t-.72)/.28;
+   if(s.make){ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*(hp.y>47?-1:1));ball.setAttribute('opacity',1-u);net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
+   else{ball.setAttribute('cx',hp.x+side*u*4);ball.setAttribute('cy',hp.y+(hp.y>47?-1:1)*(u*3)-Math.sin(u*Math.PI)*2.2);sv.querySelectorAll('circle[stroke="#ff6b1a"]').forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
+   fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-u*.9).toFixed(2))}
+  if(t<1)pb.raf=requestAnimationFrame(f);else{pb.anim=false;done()}}
+ pb.raf=requestAnimationFrame(f)}
+function pbStep(){const L=pbList();if(pb.n>=L.length){pbStop();return}const s=L[pb.n];pbHud(L,pb.n,s);hl=null;
+ animShot(s,()=>{pb.n++;pbDraw();markList();if(pb.playing)pb.to=setTimeout(pbStep,180/pb.speed)})}
+function pbStop(){pb.playing=false;cancelAnimationFrame(pb.raf);clearTimeout(pb.to);if(pb.anim){pb.anim=false;pbDraw()}$('#pbPlay').textContent='▶ Play'}
+$('#pbPlay').onclick=()=>{if(pb.playing)return pbStop();const L=pbList();if(!L.length)return toast('No shots to play');if(pb.n>=L.length)pb.n=0;pb.playing=true;$('#pbPlay').textContent='❚❚ Pause';pbDraw();pbStep()};
+$('#pbFwd').onclick=()=>{pbStop();pbDraw();pbStep()};
+$('#pbBack').onclick=()=>{pbStop();pb.n=Math.max(0,pb.n-1);pbDraw();markList()};
+$$('#pbSpd button').forEach(b=>b.onclick=()=>{pb.speed=+b.dataset.s;$$('#pbSpd button').forEach(x=>x.classList.toggle('on',x===b))});
+$('#scrub').oninput=e=>{pbStop();hl=null;pb.n=+e.target.value;pbDraw();markList()};
+function renderList(){const L=pbList(),pl=G.periods===2?'H':'Q';$('#slist').innerHTML=L.map((s,i)=>`<div class="it" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'O':'X'}</span><span class="tm">${fmt(s.t)}</span><span>${s.period>G.periods?'OT':pl+s.period}</span><span style="flex:1">${esc(tname(s.team))}${s.player?' #'+esc(s.player):''} · ${ZONES[s.zone].n}</span><b>${s.pts?'+'+s.pts:''}</b></div>`).join('')||'<p class="hint">No shots yet</p>';
+ $$('#slist .it').forEach(r=>r.onclick=()=>{pbStop();hl=r.dataset.id;pb.n=+r.dataset.i+1;pbDraw();markList();window.scrollTo({top:0,behavior:'smooth'})});markList()}
+function markList(){$$('#slist .it').forEach(r=>r.classList.toggle('hl',hl?r.dataset.id===hl:+r.dataset.i===pb.n-1))}
+function renderTimeline(){pbStop();pbFilters();const L=pbList();if(!pb.n||pb.n>L.length)pb.n=L.length;pbDraw();renderList();renderFlow()}
 function renderFlow(){const sh=G.shots.slice().sort((a,b)=>a.t-b.t);if(!sh.length){$('#flow').innerHTML='<p class="hint">No shots yet</p>';return}
  const T=Math.max(60000,sh[sh.length-1].t),W=340,Hh=150;const ser={us:[[0,0]],them:[[0,0]]},c={us:0,them:0};sh.forEach(s=>{c[s.team]+=s.pts;ser[s.team].push([s.t,c[s.team]])});
  const P=Math.max(4,c.us,c.them);const X=t=>28+t/T*(W-36),Y=p=>Hh-18-p/P*(Hh-30);
@@ -268,12 +343,20 @@ function pngBlob(){return new Promise(res=>{const svg=document.createElementNS('
  const img=new Image();img.onload=()=>{c.drawImage(img,0,head,51*S,(H+1)*S);cv.toBlob(res,'image/png')};img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str.replace('<svg','<svg width="'+51*S+'" height="'+(H+1)*S+'"'))})}
 $('#xPng').onclick=async()=>dl(slug()+'-'+team+'-shotchart.png',await pngBlob(),'image/png');
 
+// ---------- New / clear ----------
+$('#clkMore').onclick=()=>{const p=$('#clkPanel');p.hidden=!p.hidden};
+$('#hNew').onclick=()=>{const d=$('#ngDlg');$('#ngName').value='Game '+(DB.games.length+1);$('#ngUs').value=G.us;$('#ngThem').value='';$('#ngDate').value=new Date().toISOString().slice(0,10);$('#ngFull').value=G.full?1:0;d.showModal()};
+$('#ngDlg').addEventListener('close',()=>{if($('#ngDlg').returnValue!=='ok')return;const g=newGame();Object.assign(g,{name:$('#ngName').value||g.name,us:$('#ngUs').value||G.us,them:$('#ngThem').value||'Them',date:$('#ngDate').value||g.date,full:$('#ngFull').value==='1',three:G.three,periods:G.periods||4,rosters:JSON.parse(JSON.stringify(G.rosters))});
+ DB.games.push(g);period=1;team='us';openGame(g.id);go('chart');toast('New game: '+g.name)});
+function confirmDlg(t,b,ok,fn){$('#cfT').textContent=t;$('#cfB').textContent=b;$('#cfOk').textContent=ok;const d=$('#cfDlg');d.onclose=()=>{d.returnValue==='ok'&&fn()};d.showModal()}
+$('#hClr').onclick=()=>{if(!G.shots.length)return toast('No shots to clear');confirmDlg('Clear all shots?','Removes all '+G.shots.length+' shots from "'+G.name+'" and resets the clock. Saved games stay.','Clear shots',()=>{G.shots=[];G.clock={running:false,start:0,acc:0,off:0};persist();renderAll();toast('Shots cleared')})};
+
 // ---------- Nav ----------
-function go(v){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='stats')renderStats();if(v==='time')renderTimeline();if(v==='games')renderGames();if(v==='chart')renderChart();window.scrollTo(0,0)}
+function go(v){$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));if(v==='stats')renderStats();if(v!=='time')pbStop();if(v==='time')renderTimeline();if(v==='games')renderGames();if(v==='chart')renderChart();window.scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
 function renderAll(){$('#period').innerHTML=periodOpts();$('#period').value=Math.min(period,(G.periods||4)+1);period=+$('#period').value;renderChart();renderGames();tick()}
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});document.addEventListener('gesturestart',e=>e.preventDefault());
 renderAll();
-window.__test={classify,get G(){return G},csv,tsList,pngBlob};
+window.__test={pb,classify,get G(){return G},csv,tsList,pngBlob};
 </script>
 </body></html>
