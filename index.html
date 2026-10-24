@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title><meta name="app-version" content="shotchart-v2-playback">
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v3-trails">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f1d6a8;--cl:#5b3a17}
 @media(prefers-color-scheme:dark){:root{--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57;--court:#2b2418;--cl:#f3d9b0;--make:#2fdc7a;--miss:#ff5257}}
@@ -81,6 +81,8 @@ dialog[open]{animation:fade .2s ease}
 #rcourt{border-radius:0 0 10px 10px}
 .pbctl{display:flex;gap:6px;align-items:center;margin:10px 0 4px}.pbctl>button{min-width:52px;font-size:18px}#pbPlay{flex:1}
 .spd button{padding:6px 5px;min-width:34px;min-height:46px;font-size:14px}
+#pbArcs{min-width:44px;font-size:20px}#pbArcs.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.glow circle{mix-blend-mode:normal}
 </style>
 </head><body>
 <header><h1 id="title">Shot Chart</h1><span id="hdrClock" class="tm"></span><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New Game</button></header>
@@ -110,7 +112,7 @@ dialog[open]{animation:fade .2s ease}
  <div class="pbhud" id="pbHud"></div>
  <svg class="court" id="rcourt"></svg>
  <div class="pbctl"><button id="pbBack" aria-label="Step back">⏮</button><button id="pbPlay" class="pri" aria-label="Play">▶ Play</button><button id="pbFwd" aria-label="Step forward">⏭</button>
-  <div class="seg spd" id="pbSpd"><button data-s=".5">½×</button><button data-s="1" class="on">1×</button><button data-s="2">2×</button><button data-s="4">4×</button></div></div>
+  <div class="seg spd" id="pbSpd"><button data-s=".5">½×</button><button data-s="1" class="on">1×</button><button data-s="2">2×</button><button data-s="4">4×</button></div><button id="pbArcs" class="sm on" aria-label="Toggle arcs">⌒</button></div>
  <input type="range" id="scrub" min="0" max="0" value="0" style="width:100%">
  <div class="card"><h3>Game flow (cumulative points)</h3><div id="flow"></div></div>
  <div class="card"><h3>Shots in order</h3><div class="list" id="slist"></div></div>
@@ -263,33 +265,65 @@ function pbFilters(){const t=$('#pbTeam').value||'both';$('#pbTeam').innerHTML=`
  $('#pbPlayer').innerHTML='<option value="">Whole team</option>'+ps.map(x=>`<option value="${esc(x)}">#${esc(x)}</option>`).join('');$('#pbPlayer').value=ps.includes(p)?p:''}
 ['#pbTeam','#pbPlayer'].forEach(id=>$(id).onchange=()=>{pbStop();pbFilters();pb.n=0;pbDraw();renderList()});
 function hoopOf(s){return{x:25,y:s.y>47?94-HY:HY}}
-function pbDraw(){const L=pbList();pb.n=Math.min(pb.n,L.length);const sv=$('#rcourt');drawCourt(sv,L.slice(0,pb.n));sv.insertAdjacentHTML('beforeend','<g id="fx"></g>');$('#scrub').max=L.length;$('#scrub').value=pb.n;pbHud(L,pb.n,L[pb.n-1]);
+function pbDraw(){const L=pbList();pb.n=Math.min(pb.n,L.length);const sv=$('#rcourt');drawCourt(sv,[],arcsSVG(L.slice(0,pb.n))+L.slice(0,pb.n).map(x=>marker(x)).join(''));sv.insertAdjacentHTML('beforeend','<g id="fx"></g>');$('#scrub').max=L.length;$('#scrub').value=pb.n;pbHud(L,pb.n,L[pb.n-1]);
  const cur=hl&&L.slice(0,pb.n).find(s=>s.id===hl);cur&&sv.insertAdjacentHTML('beforeend',`<circle cx="${cur.x}" cy="${cur.y}" r="2.2" fill="none" stroke="var(--acc)" stroke-width=".35"/>`)}
 function pbHud(L,n,cur){const d=L.slice(0,n),sc={us:0,them:0};d.forEach(s=>sc[s.team]+=s.pts);const m=d.filter(s=>s.make).length,pl=G.periods===2?'H':'Q';
  $('#pbHud').innerHTML=`<span class="sc">${esc(G.us)} <b>${sc.us}</b> · ${esc(G.them)} <b>${sc.them}</b></span><span>FG ${m}/${d.length} ${pct(m,d.length)}</span><span class="tm">${cur?(cur.period>G.periods?'OT':pl+cur.period)+' '+fmt(cur.t):'0:00'}</span>`}
-function figure(s){const col=s.team==='us'?'var(--us)':'var(--them)',hp=hoopOf(s);const flip=s.x>25?-1:1;
- return `<g class="fig" transform="translate(${s.x} ${s.y>47?Math.min(s.y,89.4):Math.max(s.y,4.6)}) scale(1.6)"><g class="pop"><ellipse cx="0" cy=".2" rx="1.1" ry=".35" fill="rgba(0,0,0,.25)"/>
- <path d="M-.35 -.2L-.5 .15M.35 -.2L.5 .15" stroke="#222" stroke-width=".32" stroke-linecap="round"/>
- <rect x="-.75" y="-2" width="1.5" height="1.85" rx=".45" fill="${col}" stroke="#fff" stroke-width=".12"/>
- ${s.player?`<text x="0" y="-.7" font-size=".95" font-weight="900" text-anchor="middle" fill="#fff">${esc(s.player)}</text>`:''}
- <circle cx="0" cy="-2.65" r=".62" fill="#c98b5a" stroke="#5b3a17" stroke-width=".08"/><circle cx="-.2" cy="-2.72" r=".09" fill="#111"/><circle cx=".2" cy="-2.72" r=".09" fill="#111"/>
- <g class="arms"><path d="M-.6 -1.8L-.7 -3.3M.6 -1.8L.7 -3.3" stroke="${col}" stroke-width=".32" stroke-linecap="round"/></g></g></g>`}
-const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-function animShot(s,done){pb.anim=true;const fx=$('#fx');fx.innerHTML=figure(s)+`<circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="${s.x}" cy="${Math.max(s.y,4.6)-5.4}"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
- const sv=$('#rcourt'),pop=fx.querySelector('.pop'),arms=fx.querySelector('.arms'),ball=fx.querySelector('#ball'),fl=fx.querySelector('#flash'),hp=hoopOf(s);
- const nets=[...sv.querySelectorAll('.net')],net=nets.length>1&&s.y>47?nets[1]:nets[0];
- const D=1700/pb.speed,t0=performance.now(),sx=s.x,sy=Math.max(s.y,4.6)-5.4,dist=Math.hypot(hp.x-sx,hp.y-sy),peak=Math.max(3,dist*.45);
- const side=(s.x<=25?1:-1),col=s.make?'var(--make)':'var(--miss)';fl.setAttribute('cx',hp.x);fl.setAttribute('cy',hp.y);fl.setAttribute('stroke',col);
+function figY(s){return s.y>47?Math.min(s.y,89.4):Math.max(s.y,4.6)}
+const SKIN=['#f1c27d','#c68642','#8d5524','#e0ac69'],HAIR=['#2b1b0e','#5a3214','#111','#a0522d'];
+function figure(s){const col=s.team==='us'?'var(--us)':'var(--them)',h=[...(s.player||s.id)].reduce((a,c)=>a+c.charCodeAt(0),0),sk=SKIN[h%4],hr=HAIR[(h>>2)%4];
+ return `<g class="fig" transform="translate(${s.x} ${figY(s)}) scale(1.6)"><g class="pop">
+ <ellipse class="shd" cx="0" cy=".05" rx=".9" ry=".28" fill="rgba(0,0,0,.28)"/>
+ <g class="lift">
+  <path class="leg" d="" fill="none" stroke="${sk}" stroke-width=".26" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse class="shL" rx=".24" ry=".13" fill="#fff" stroke="#222" stroke-width=".06"/><ellipse class="shR" rx=".24" ry=".13" fill="#fff" stroke="#222" stroke-width=".06"/>
+  <g class="torso">
+   <path d="M-.42 -1.15 L.42 -1.15 L.46 -.78 L.06 -.78 L0 -.9 L-.06 -.78 L-.46 -.78Z" fill="${col}" stroke="#fff" stroke-width=".05"/>
+   <path d="M-.48 -2.05 Q0 -1.85 .48 -2.05 L.44 -1.12 L-.44 -1.12Z" fill="${col}" stroke="#fff" stroke-width=".07"/>
+   <path d="M-.2 -2.0 Q0 -1.82 .2 -2.0" fill="none" stroke="#fff" stroke-width=".07"/>
+   ${s.player?`<text x="0" y="-1.32" font-size=".52" font-weight="900" text-anchor="middle" fill="#fff" stroke="rgba(0,0,0,.35)" stroke-width=".03">${esc(s.player)}</text>`:''}
+   <rect x="-.11" y="-2.25" width=".22" height=".25" fill="${sk}"/>
+   <circle cx="0" cy="-2.62" r=".42" fill="${sk}" stroke="rgba(0,0,0,.35)" stroke-width=".04"/>
+   <path d="M-.43 -2.62 Q-.45 -3.12 0 -3.1 Q.45 -3.12 .43 -2.62 Q.3 -2.9 0 -2.88 Q-.3 -2.9 -.43 -2.62Z" fill="${hr}"/>
+   <circle cx="-.15" cy="-2.62" r=".055" fill="#111"/><circle cx=".15" cy="-2.62" r=".055" fill="#111"/>
+   <path class="mouth" d="M-.13 -2.44 Q0 -2.36 .13 -2.44" fill="none" stroke="#5a1f10" stroke-width=".05" stroke-linecap="round"/>
+   <path class="arm" d="" fill="none" stroke="${sk}" stroke-width=".22" stroke-linecap="round" stroke-linejoin="round"/>
+   <path class="slv" d="" fill="none" stroke="${col}" stroke-width=".3" stroke-linecap="round"/>
+  </g></g></g></g>`}
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,cl=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),seg=(t,a,b)=>cl((t-a)/(b-a)),lerp=(a,b,u)=>a+(b-a)*u;
+// pose: c crouch, h jump height, a arm extension, w wrist flick; returns ball pos in local coords
+function pose(F,c,h,a,w){const dy=c*.28;F.lift.setAttribute('transform',`translate(0 ${(-h).toFixed(3)})`);F.torso.setAttribute('transform',`translate(0 ${dy.toFixed(3)})`);
+ let d='';[-1,1].forEach(k=>{const hx=k*.24,hy=-.85+dy,fx=k*.3,fy=h>0?-.02+h*.15:0,kx=k*(.3+c*.22),ky=(hy+fy)/2;d+=`M${hx} ${hy.toFixed(3)}L${kx.toFixed(3)} ${ky.toFixed(3)}L${fx} ${fy.toFixed(3)}`;F[k<0?'shL':'shR'].setAttribute('cx',fx+k*.06);F[k<0?'shL':'shR'].setAttribute('cy',(fy+.02).toFixed(3))});F.leg.setAttribute('d',d);
+ let ad='',sd='';const sy=-1.95;[-1,1].forEach(k=>{const sx=k*.46,ex=lerp(k*.62,k*.28,a),ey=lerp(-1.45,-2.95,a),hx=lerp(k*.2,k*.12,a),hy=lerp(-2.0,-3.55,a);
+  const wx=hx+k*0,wy=hy-.22*Math.cos(w*1.2),wfx=hx+(-k*.0)+.0,wf=w*.18;ad+=`M${sx} ${sy}L${ex.toFixed(3)} ${ey.toFixed(3)}L${hx.toFixed(3)} ${hy.toFixed(3)}L${(hx+wf).toFixed(3)} ${(wy).toFixed(3)}`;sd+=`M${sx} ${sy}L${lerp(sx,ex,.35).toFixed(3)} ${lerp(sy,ey,.35).toFixed(3)}`});
+ F.arm.setAttribute('d',ad);F.slv.setAttribute('d',sd);F.shd.setAttribute('rx',(.9-h*.35).toFixed(3));
+ return{x:0,y:lerp(-2.25,-3.95,a)+dy-h}}
+function arcPts(s,sx,sy){const hp=hoopOf(s),dx=hp.x-sx,dy=hp.y-sy,dist=Math.hypot(dx,dy)||1;let nx=-dy/dist,ny=dx/dist;const away=hp.y>47?-1:1;if(ny*away<0||(Math.abs(ny)<.05&&nx*(25-sx)<0)){nx=-nx;ny=-ny}const pk=Math.min(4,dist*.22);return u=>{const b=Math.sin(u*Math.PI)*pk;return{x:sx+dx*u+nx*b,y:sy+dy*u+ny*b}}}
+function relPt(s){return{x:s.x,y:figY(s)+1.6*(-3.95-.9)}}
+function arcPath(s,n=16){const r=relPt(s),f=arcPts(s,r.x,r.y);let d='';for(let i=0;i<=n;i++){const p=f(i/n);d+=(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)}return d}
+let showArcs=localStorage.getItem('shotchart.arcs')!=='0';
+function arcsSVG(L){return showArcs?L.map(s=>`<path d="${arcPath(s)}" fill="none" stroke="${s.make?'var(--make)':'var(--miss)'}" stroke-width=".22" stroke-linecap="round" opacity=".38"/>`).join(''):''}
+const TN=16;
+function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':'var(--miss)';
+ let tr='';for(let i=0;i<TN;i++){const k=1-i/TN;tr+=`<circle r="${(.5*k+.06).toFixed(3)}" fill="${c}" opacity="0"/>`}
+ fx.innerHTML=`<g class="trail glow">${tr}</g>`+figure(s)+`<circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="-99" cy="-99"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
+ const sv=$('#rcourt'),q=k=>fx.querySelector(k),F={lift:q('.lift'),torso:q('.torso'),leg:q('.leg'),arm:q('.arm'),slv:q('.slv'),shL:q('.shL'),shR:q('.shR'),shd:q('.shd')},pop=q('.pop'),ball=q('#ball'),fl=q('#flash'),trail=[...fx.querySelectorAll('.trail circle')],hp=hoopOf(s);
+ const nets=[...sv.querySelectorAll('.net')],net=nets.length>1&&s.y>47?nets[1]:nets[0],rims=sv.querySelectorAll('circle[stroke="#ff6b1a"]');
+ const ox=s.x,oy=figY(s),r=relPt(s),arc=arcPts(s,r.x,r.y),D=1900/pb.speed,t0=performance.now(),side=s.x<=25?1:-1,hist=[];
+ fl.setAttribute('cx',hp.x);fl.setAttribute('cy',hp.y);fl.setAttribute('stroke',c);
  function f(now){const t=Math.min(1,(now-t0)/D);
-  const pp=Math.min(1,t/.15),sc=pp<1?1.25*Math.sin(pp*Math.PI/2)*(pp<.8?1:1):1;pop.setAttribute('transform',`scale(${(t<.15?sc:1).toFixed(3)})`);
-  const sh=t<.2?0:t<.32?(t-.2)/.12:1;pop.setAttribute('transform',`scale(${t<.15?sc.toFixed(3):1}) translate(0 ${(-Math.sin(Math.min(1,sh)*Math.PI)*.6).toFixed(2)})`);
-  arms.setAttribute('transform',`rotate(${(sh*-10).toFixed(1)})`);
-  if(t<.3){ball.setAttribute('cy',sy-sh*.5)}
-  else if(t<.72){const u=ease((t-.3)/.42);ball.setAttribute('cx',sx+(hp.x-sx)*u);ball.setAttribute('cy',sy+(hp.y-sy)*u-Math.sin(u*Math.PI)*peak);ball.setAttribute('r',(.55+Math.sin(u*Math.PI)*.35).toFixed(3))}
-  else{const u=(t-.72)/.28;
-   if(s.make){ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*(hp.y>47?-1:1));ball.setAttribute('opacity',1-u);net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
-   else{ball.setAttribute('cx',hp.x+side*u*4);ball.setAttribute('cy',hp.y+(hp.y>47?-1:1)*(u*3)-Math.sin(u*Math.PI)*2.2);sv.querySelectorAll('circle[stroke="#ff6b1a"]').forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
-   fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-u*.9).toFixed(2))}
+  const pp=seg(t,0,.1),sc=pp<1?Math.sin(pp*Math.PI*.75)/Math.sin(Math.PI*.75)*(1+.15*Math.sin(pp*Math.PI)):1;pop.setAttribute('transform',`scale(${sc.toFixed(3)})`);
+  const dip=Math.sin(seg(t,.1,.2)*Math.PI/2)*(1-seg(t,.2,.25)),up=seg(t,.2,.3),land=seg(t,.44,.54),h=Math.sin(ease(up)*Math.PI/2)*.9*(1-ease(land)),crouchLand=Math.sin(land*Math.PI)*.6;
+  const arm=ease(seg(t,.18,.3)),wr=seg(t,.3,.38)*(1-seg(t,.55,.7)*.6);
+  const bp=pose(F,Math.max(dip,crouchLand),h,arm,wr);
+  if(t<.3){ball.setAttribute('cx',(ox+bp.x*1.6).toFixed(2));ball.setAttribute('cy',(oy+bp.y*1.6).toFixed(2))}
+  else if(t<.72){const u=ease(seg(t,.3,.72)),p=arc(u);ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('r',(.55+Math.sin(u*Math.PI)*.35).toFixed(3));hist.unshift(p)}
+  else{const u=(t-.72)/.28,dir=hp.y>47?-1:1;ball.setAttribute('r','.55');
+   if(s.make){ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*dir);ball.setAttribute('opacity',(1-u).toFixed(2));net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
+   else{const p={x:hp.x+side*u*4,y:hp.y+dir*u*3-Math.sin(u*Math.PI)*2.2};ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
+   fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-cl((u-.4)/.6)*.9).toFixed(2));hist.unshift(hist[0])}
+  if(hist.length>TN*2)hist.length=TN*2;const fade=t>.72?1-seg(t,.8,1):1;
+  trail.forEach((e,i)=>{const p=hist[i*2];if(!p){e.setAttribute('opacity',0);return}e.setAttribute('cx',p.x.toFixed(2));e.setAttribute('cy',p.y.toFixed(2));e.setAttribute('opacity',((1-i/TN)*.75*fade).toFixed(2))});
   if(t<1)pb.raf=requestAnimationFrame(f);else{pb.anim=false;done()}}
  pb.raf=requestAnimationFrame(f)}
 function pbStep(){const L=pbList();if(pb.n>=L.length){pbStop();return}const s=L[pb.n];pbHud(L,pb.n,s);hl=null;
@@ -299,11 +333,12 @@ $('#pbPlay').onclick=()=>{if(pb.playing)return pbStop();const L=pbList();if(!L.l
 $('#pbFwd').onclick=()=>{pbStop();pbDraw();pbStep()};
 $('#pbBack').onclick=()=>{pbStop();pb.n=Math.max(0,pb.n-1);pbDraw();markList()};
 $$('#pbSpd button').forEach(b=>b.onclick=()=>{pb.speed=+b.dataset.s;$$('#pbSpd button').forEach(x=>x.classList.toggle('on',x===b))});
+$('#pbArcs').onclick=()=>{showArcs=!showArcs;localStorage.setItem('shotchart.arcs',showArcs?1:0);$('#pbArcs').classList.toggle('on',showArcs);if(!pb.anim)pbDraw()};
 $('#scrub').oninput=e=>{pbStop();hl=null;pb.n=+e.target.value;pbDraw();markList()};
 function renderList(){const L=pbList(),pl=G.periods===2?'H':'Q';$('#slist').innerHTML=L.map((s,i)=>`<div class="it" data-i="${i}" data-id="${s.id}"><span class="dot" style="color:${s.make?'var(--make)':'var(--miss)'}">${s.make?'O':'X'}</span><span class="tm">${fmt(s.t)}</span><span>${s.period>G.periods?'OT':pl+s.period}</span><span style="flex:1">${esc(tname(s.team))}${s.player?' #'+esc(s.player):''} · ${ZONES[s.zone].n}</span><b>${s.pts?'+'+s.pts:''}</b></div>`).join('')||'<p class="hint">No shots yet</p>';
  $$('#slist .it').forEach(r=>r.onclick=()=>{pbStop();hl=r.dataset.id;pb.n=+r.dataset.i+1;pbDraw();markList();window.scrollTo({top:0,behavior:'smooth'})});markList()}
 function markList(){$$('#slist .it').forEach(r=>r.classList.toggle('hl',hl?r.dataset.id===hl:+r.dataset.i===pb.n-1))}
-function renderTimeline(){pbStop();pbFilters();const L=pbList();if(!pb.n||pb.n>L.length)pb.n=L.length;pbDraw();renderList();renderFlow()}
+function renderTimeline(){$('#pbArcs').classList.toggle('on',showArcs);pbStop();pbFilters();const L=pbList();if(!pb.n||pb.n>L.length)pb.n=L.length;pbDraw();renderList();renderFlow()}
 function renderFlow(){const sh=G.shots.slice().sort((a,b)=>a.t-b.t);if(!sh.length){$('#flow').innerHTML='<p class="hint">No shots yet</p>';return}
  const T=Math.max(60000,sh[sh.length-1].t),W=340,Hh=150;const ser={us:[[0,0]],them:[[0,0]]},c={us:0,them:0};sh.forEach(s=>{c[s.team]+=s.pts;ser[s.team].push([s.t,c[s.team]])});
  const P=Math.max(4,c.us,c.them);const X=t=>28+t/T*(W-36),Y=p=>Hh-18-p/P*(Hh-30);
