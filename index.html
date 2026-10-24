@@ -6,10 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title><meta name="app-version" content="shotchart-v4-edit">
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v5-logo">
 <style>
-:root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f1d6a8;--cl:#5b3a17}
-@media(prefers-color-scheme:dark){:root{--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57;--court:#2b2418;--cl:#f3d9b0;--make:#2fdc7a;--miss:#ff5257}}
+:root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f9e6c4;--court2:#f3d7a6;--cl:#3d2208;--paint:rgba(255,107,26,.22)}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57;--make:#0fae52;--miss:#e5262c}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overscroll-behavior:none}
 body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
@@ -134,7 +134,8 @@ dialog.sheet{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0 auto;width
   <div style="flex:1"><label>Periods</label><select id="gPer" style="width:100%"><option value="4">Quarters</option><option value="2">Halves</option></select></div></div>
   <label>Our roster (one per line: number name)</label><textarea id="rUs" placeholder="3 Jake&#10;11 Marcus"></textarea>
   <label>Opponent roster</label><textarea id="rThem" placeholder="5&#10;23"></textarea>
-  <div class="row" style="margin-top:8px"><button class="pri" id="save">Save setup</button><button id="newG">+ New game</button></div>
+  <label>Court logo (center circle — kept for future games)</label><div class="row"><span id="logoPrev" style="width:56px;height:56px;border-radius:50%;border:1px solid var(--line);background:var(--court) center/contain no-repeat;display:inline-block"></span><button class="sm" id="logoUp">Upload image</button><button class="sm" id="logoRm">Remove</button><input type="file" id="logoFile" accept="image/*" hidden></div>
+ <div class="row" style="margin-top:8px"><button class="pri" id="save">Save setup</button><button id="newG">+ New game</button></div>
  </div>
  <div class="card"><h3>Export &amp; share</h3><div class="row">
   <button id="xCsv">CSV</button><button id="xTs">Copy timestamps</button><button id="xPng">PNG chart</button><button id="xJson">JSON backup</button><button id="iJson">Import JSON</button>
@@ -190,12 +191,18 @@ $('#clkSet').onclick=()=>{const v=prompt('Set clock to (m:ss), e.g. the video ti
 
 // ---------- Court geometry (feet; baseline at top, hoop at y=5.25) ----------
 const HY=5.25;
+function logoSVG(){const id='lc'+Math.random().toString(36).slice(2,7),lg=DB.logo;let inner;
+ if(lg)inner=`<image href="${lg}" x="19.2" y="41.2" width="11.6" height="11.6" preserveAspectRatio="xMidYMid meet" opacity=".85"/>`;
+ else{const t=(G.us||'').trim(),ini=t.split(/\s+/).map(w=>w[0]).join('').slice(0,3).toUpperCase()||'★';inner=`<circle cx="25" cy="47" r="5.7" fill="var(--paint)"/><text x="25" y="${47+1.4}" font-size="${ini.length>2?3.2:4}" font-weight="900" text-anchor="middle" fill="var(--cl)" opacity=".45" font-family="system-ui,sans-serif" letter-spacing=".2">${esc(ini)}</text><text x="25" y="${47+3.6}" font-size="1.1" font-weight="700" text-anchor="middle" fill="var(--cl)" opacity=".4">${esc(t.slice(0,18).toUpperCase())}</text>`}
+ return `<clipPath id="${id}"><circle cx="25" cy="47" r="5.9"/></clipPath><g clip-path="url(#${id})">${inner}</g>`}
 function courtSVG(full,R){const H=full?94:47;let s=`<rect x="0" y="0" width="50" height="${H}" fill="var(--court)"/>`;
+ for(let x=2.5;x<50;x+=2.5)s+=`<line x1="${x}" x2="${x}" y1="0" y2="${H}" stroke="var(--court2)" stroke-width=".12"/>`;
+ s+=logoSVG();
  const half=(flip)=>{const T=y=>flip?94-y:y,sw=flip?1:0;let o='';
-  o+=`<rect x="19" y="${flip?75:0}" width="12" height="19" fill="rgba(255,107,26,.16)" stroke="var(--cl)"/>`;
+  o+=`<rect x="19" y="${flip?75:0}" width="12" height="19" fill="var(--paint)" stroke="var(--cl)"/>`;
   o+=`<circle cx="25" cy="${T(19)}" r="6" fill="none" stroke="var(--cl)"/>`;
   o+=`<path d="M21 ${T(HY)} A4 4 0 0 ${flip?1:0} 29 ${T(HY)}" fill="none" stroke="var(--cl)"/>`;
-  const xl=25-R,xr=25+R;o+=`<path d="M${xl} ${T(0)} L${xl} ${T(HY)} A${R} ${R} 0 0 ${sw} ${xr} ${T(HY)} L${xr} ${T(0)}" fill="none" stroke="var(--cl)" stroke-width=".35"/>`;
+  const xl=25-R,xr=25+R;o+=`<path d="M${xl} ${T(0)} L${xl} ${T(HY)} A${R} ${R} 0 0 ${sw} ${xr} ${T(HY)} L${xr} ${T(0)}" fill="none" stroke="var(--cl)" stroke-width=".42"/>`;
   o+=`<line x1="22" x2="28" y1="${T(4)}" y2="${T(4)}" stroke="var(--cl)" stroke-width=".4"/><path class="net" style="transform-box:fill-box;transform-origin:50% 0" d="M24.3 ${T(HY)} L24.6 ${T(HY+1.6)} L25.4 ${T(HY+1.6)} L25.7 ${T(HY)} M24.8 ${T(HY)}L24.9 ${T(HY+1.6)}M25.2 ${T(HY)}L25.1 ${T(HY+1.6)}" fill="none" stroke="#fff" stroke-width=".12" opacity=".85"/><circle cx="25" cy="${T(HY)}" r=".75" fill="none" stroke="#ff6b1a" stroke-width=".3"/>`;return o};
  s+=half(false);if(full)s+=half(true);
  s+=`<rect x="0" y="0" width="50" height="${H}" fill="none" stroke="var(--cl)" stroke-width=".4"/>`;
@@ -208,7 +215,7 @@ function classify(x,y,R){if(y>47)y=94-y;const dx=x-25,dy=y-HY,d=Math.hypot(dx,dy
  if(d<=4)return'rim';if(Math.abs(dx)<=6&&y<=19)return'paint';return d<R-4?'mid':'long2'}
 const QC={good:'var(--make)',okay:'#e0a800',poor:'var(--miss)'};
 function marker(s,cls=''){const c=s.make?'var(--make)':'var(--miss)';return s.make?`<circle class="${cls}" cx="${s.x}" cy="${s.y}" r="1.05" fill="none" stroke="${c}" stroke-width=".5"/>`:`<path class="${cls}" d="M${s.x-.9} ${s.y-.9}L${s.x+.9} ${s.y+.9}M${s.x+.9} ${s.y-.9}L${s.x-.9} ${s.y+.9}" stroke="${c}" stroke-width=".5" stroke-linecap="round"/>`}
-function drawCourt(svg,shots,extra=''){const {H,s}=courtSVG(G.full,G.three);svg.setAttribute('viewBox',`-.5 -.5 51 ${H+1}`);svg.innerHTML=`<g stroke-width=".25">${s}</g>${shots.map(x=>marker(x)).join('')}${extra}`}
+function drawCourt(svg,shots,extra=''){const {H,s}=courtSVG(G.full,G.three);svg.setAttribute('viewBox',`-.5 -.5 51 ${H+1}`);svg.innerHTML=`<g stroke-width=".32">${s}</g>${shots.map(x=>marker(x)).join('')}${extra}`}
 
 // ---------- Tap input ----------
 const court=$('#court');let pend=null,lp=null,downAt=null,ghost=null,ED={id:null,moving:false,tmp:null,drag:false};
@@ -340,16 +347,17 @@ function pose(F,c,h,a,w){const dy=c*.28;F.lift.setAttribute('transform',`transla
   const wx=hx+k*0,wy=hy-.22*Math.cos(w*1.2),wfx=hx+(-k*.0)+.0,wf=w*.18;ad+=`M${sx} ${sy}L${ex.toFixed(3)} ${ey.toFixed(3)}L${hx.toFixed(3)} ${hy.toFixed(3)}L${(hx+wf).toFixed(3)} ${(wy).toFixed(3)}`;sd+=`M${sx} ${sy}L${lerp(sx,ex,.35).toFixed(3)} ${lerp(sy,ey,.35).toFixed(3)}`});
  F.arm.setAttribute('d',ad);F.slv.setAttribute('d',sd);F.shd.setAttribute('rx',(.9-h*.35).toFixed(3));
  return{x:0,y:lerp(-2.25,-3.95,a)+dy-h}}
-function arcPts(s,sx,sy){const hp=hoopOf(s),dx=hp.x-sx,dy=hp.y-sy,dist=Math.hypot(dx,dy)||1;let nx=-dy/dist,ny=dx/dist;const away=hp.y>47?-1:1;if(ny*away<0||(Math.abs(ny)<.05&&nx*(25-sx)<0)){nx=-nx;ny=-ny}const pk=Math.min(4,dist*.22);return u=>{const b=Math.sin(u*Math.PI)*pk;return{x:sx+dx*u+nx*b,y:sy+dy*u+ny*b}}}
+function arcPts(s,sx,sy){const hp=hoopOf(s),dx=hp.x-sx,dy=hp.y-sy;return u=>({x:sx+dx*u,y:sy+dy*u})}
 function relPt(s){return{x:s.x,y:figY(s)+1.6*(-3.95-.9)}}
-function arcPath(s,n=16){const r=relPt(s),f=arcPts(s,r.x,r.y);let d='';for(let i=0;i<=n;i++){const p=f(i/n);d+=(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)}return d}
+function arcPath(s){const r={x:s.x,y:s.y},h=hoopOf(s);return `M${r.x.toFixed(2)} ${r.y.toFixed(2)}L${h.x} ${h.y}`}
+function arcPathOld(s,n=16){const r=relPt(s),f=arcPts(s,r.x,r.y);let d='';for(let i=0;i<=n;i++){const p=f(i/n);d+=(i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2)}return d}
 let showArcs=localStorage.getItem('shotchart.arcs')!=='0';
 function arcsSVG(L){return showArcs?L.map(s=>`<path d="${arcPath(s)}" fill="none" stroke="${s.make?'var(--make)':'var(--miss)'}" stroke-width=".22" stroke-linecap="round" opacity=".38"/>`).join(''):''}
 const TN=16;
 function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':'var(--miss)';
  let tr='';for(let i=0;i<TN;i++){const k=1-i/TN;tr+=`<circle r="${(.5*k+.06).toFixed(3)}" fill="${c}" opacity="0"/>`}
- fx.innerHTML=`<g class="trail glow">${tr}</g>`+figure(s)+`<circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="-99" cy="-99"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
- const sv=$('#rcourt'),q=k=>fx.querySelector(k),F={lift:q('.lift'),torso:q('.torso'),leg:q('.leg'),arm:q('.arm'),slv:q('.slv'),shL:q('.shL'),shR:q('.shR'),shd:q('.shd')},pop=q('.pop'),ball=q('#ball'),fl=q('#flash'),trail=[...fx.querySelectorAll('.trail circle')],hp=hoopOf(s);
+ fx.innerHTML=`<g class="trail glow">${tr}</g>`+figure(s)+`<ellipse id="bshd" rx=".5" ry=".3" fill="rgba(0,0,0,.25)" cx="-99" cy="-99"/><circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="-99" cy="-99"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
+ const sv=$('#rcourt'),q=k=>fx.querySelector(k),bshd=fx.querySelector('#bshd'),F={lift:q('.lift'),torso:q('.torso'),leg:q('.leg'),arm:q('.arm'),slv:q('.slv'),shL:q('.shL'),shR:q('.shR'),shd:q('.shd')},pop=q('.pop'),ball=q('#ball'),fl=q('#flash'),trail=[...fx.querySelectorAll('.trail circle')],hp=hoopOf(s);
  const nets=[...sv.querySelectorAll('.net')],net=nets.length>1&&s.y>47?nets[1]:nets[0],rims=sv.querySelectorAll('circle[stroke="#ff6b1a"]');
  const ox=s.x,oy=figY(s),r=relPt(s),arc=arcPts(s,r.x,r.y),D=1900/pb.speed,t0=performance.now(),side=s.x<=25?1:-1,hist=[];
  fl.setAttribute('cx',hp.x);fl.setAttribute('cy',hp.y);fl.setAttribute('stroke',c);
@@ -359,10 +367,10 @@ function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':
   const arm=ease(seg(t,.18,.3)),wr=seg(t,.3,.38)*(1-seg(t,.55,.7)*.6);
   const bp=pose(F,Math.max(dip,crouchLand),h,arm,wr);
   if(t<.3){ball.setAttribute('cx',(ox+bp.x*1.6).toFixed(2));ball.setAttribute('cy',(oy+bp.y*1.6).toFixed(2))}
-  else if(t<.72){const u=ease(seg(t,.3,.72)),p=arc(u);ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('r',(.55+Math.sin(u*Math.PI)*.35).toFixed(3));hist.unshift(p)}
+  else if(t<.72){const u=ease(seg(t,.3,.72)),p=arc(u),ht=Math.sin(u*Math.PI);ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',(p.y-ht*.9).toFixed(2));ball.setAttribute('r',(.55+ht*.28).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',(p.y+.3).toFixed(2));bshd.setAttribute('rx',(.5-ht*.15).toFixed(2));bshd.setAttribute('opacity',(1-ht*.5).toFixed(2));hist.unshift({x:p.x,y:p.y-ht*.9})}
   else{const u=(t-.72)/.28,dir=hp.y>47?-1:1;ball.setAttribute('r','.55');
-   if(s.make){ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*dir);ball.setAttribute('opacity',(1-u).toFixed(2));net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
-   else{const p={x:hp.x+side*u*4,y:hp.y+dir*u*3-Math.sin(u*Math.PI)*2.2};ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
+   if(s.make){bshd.setAttribute('opacity',0);ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*dir);ball.setAttribute('opacity',(1-u).toFixed(2));net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
+   else{const L=Math.hypot(hp.x-r.x,hp.y-r.y)||1,bx=(r.x-hp.x)/L,by=(r.y-hp.y)/L,hop=Math.abs(Math.sin(u*Math.PI*2))*(1-u)*.7,p={x:hp.x+bx*u*2.6,y:hp.y+by*u*2.6-hop};bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',(p.y+hop+.3).toFixed(2));ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
    fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-cl((u-.4)/.6)*.9).toFixed(2));hist.unshift(hist[0])}
   if(hist.length>TN*2)hist.length=TN*2;const fade=t>.72?1-seg(t,.8,1):1;
   trail.forEach((e,i)=>{const p=hist[i*2];if(!p){e.setAttribute('opacity',0);return}e.setAttribute('cx',p.x.toFixed(2));e.setAttribute('cy',p.y.toFixed(2));e.setAttribute('opacity',((1-i/TN)*.75*fade).toFixed(2))});
@@ -391,7 +399,7 @@ function renderFlow(){const sh=G.shots.slice().sort((a,b)=>a.t-b.t);if(!sh.lengt
 // ---------- Games / setup ----------
 function parseRoster(t){return t.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.match(/^#?(\w+)\s*(.*)$/);return{n:m[1],name:m[2]||''}})}
 function rosterText(a){return a.map(r=>r.n+(r.name?' '+r.name:'')).join('\n')}
-function renderGames(){$('#gName').value=G.name;$('#gDate').value=G.date;$('#gFull').value=G.full?1:0;$('#gUs').value=G.us;$('#gThem').value=G.them;$('#g3').value=String(G.three);$('#gPer').value=String(G.periods||4);$('#rUs').value=rosterText(G.rosters.us);$('#rThem').value=rosterText(G.rosters.them);
+function renderGames(){logoPrev();$('#gName').value=G.name;$('#gDate').value=G.date;$('#gFull').value=G.full?1:0;$('#gUs').value=G.us;$('#gThem').value=G.them;$('#g3').value=String(G.three);$('#gPer').value=String(G.periods||4);$('#rUs').value=rosterText(G.rosters.us);$('#rThem').value=rosterText(G.rosters.them);
  $('#glist').innerHTML=DB.games.slice().sort((a,b)=>b.created-a.created).map(g=>`<div class="gi"><div><b>${esc(g.name)}</b>${g.id===G.id?' <span class="g">(open)</span>':''}<br><small>${esc(g.date)} · ${esc(g.us)} vs ${esc(g.them)} · ${g.shots.length} shots</small></div><button class="sm" data-o="${g.id}">Open</button><button class="sm" data-d="${g.id}">Dup</button><button class="sm" data-x="${g.id}">🗑</button></div>`).join('');
  $$('[data-o]').forEach(b=>b.onclick=()=>{openGame(b.dataset.o);go('chart')});
  $$('[data-d]').forEach(b=>b.onclick=()=>{const s=DB.games.find(g=>g.id===b.dataset.d);const c=JSON.parse(JSON.stringify(s));c.id=uid();c.name+=' (copy)';c.created=Date.now();c.clock.running=false;DB.games.push(c);persist();renderGames();toast('Duplicated')});
@@ -414,13 +422,19 @@ $('#xJson').onclick=()=>dl('shotchart-backup-'+new Date().toISOString().slice(0,
 $('#iJson').onclick=()=>$('#iFile').click();
 $('#iFile').onchange=async e=>{try{const d=JSON.parse(await e.target.files[0].text());const gs=d.games||(d.shots?[d]:[]);let n=0;gs.forEach(g=>{if(!g.shots)return;if(DB.games.some(x=>x.id===g.id))g.id=uid();DB.games.push(g);n++});persist();renderGames();toast('Imported '+n+' game(s)')}catch(err){toast('Import failed')}e.target.value=''};
 function pngBlob(){return new Promise(res=>{const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('xmlns','http://www.w3.org/2000/svg');const sh=G.shots.filter(s=>s.team===team);drawCourt(svg,sh);
- const cs=getComputedStyle(document.documentElement);let str=new XMLSerializer().serializeToString(svg);['court','cl','make','miss','acc'].forEach(v=>str=str.split(`var(--${v})`).join(cs.getPropertyValue('--'+v).trim()));
+ const cs=getComputedStyle(document.documentElement);let str=new XMLSerializer().serializeToString(svg);['court2','court','cl','make','miss','acc','paint','us','them'].forEach(v=>str=str.split(`var(--${v})`).join(cs.getPropertyValue('--'+v).trim()));
  const H=G.full?94:47,S=20,head=170,cv=document.createElement('canvas');cv.width=51*S;cv.height=(H+1)*S+head;const c=cv.getContext('2d');c.fillStyle='#0f1b2d';c.fillRect(0,0,cv.width,cv.height);
  const m=sh.filter(s=>s.make).length,pts=sh.reduce((a,s)=>a+s.pts,0),good=sh.filter(s=>ZONES[s.zone].q==='good').length;
  c.fillStyle='#fff';c.font='bold 44px system-ui,sans-serif';c.fillText(`${tname(team)} — ${G.name}`,24,62);c.font='30px system-ui,sans-serif';c.fillStyle='#ffb37f';c.fillText(`${G.date}  ·  FG ${m}/${sh.length} (${pct(m,sh.length)})  ·  ${pts} pts  ·  ${pct(good,sh.length)} good looks`,24,112);c.fillStyle='#9fb0c8';c.font='24px system-ui,sans-serif';c.fillText('O = make   X = miss',24,150);
  const img=new Image();img.onload=()=>{c.drawImage(img,0,head,51*S,(H+1)*S);cv.toBlob(res,'image/png')};img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str.replace('<svg','<svg width="'+51*S+'" height="'+(H+1)*S+'"'))})}
 $('#xPng').onclick=async()=>dl(slug()+'-'+team+'-shotchart.png',await pngBlob(),'image/png');
 
+// ---------- Logo ----------
+function logoPrev(){$('#logoPrev').style.backgroundImage=DB.logo?`url(${DB.logo})`:'none';$('#logoPrev').textContent=DB.logo?'':'';$('#logoRm').disabled=!DB.logo}
+$('#logoUp').onclick=()=>$('#logoFile').click();
+$('#logoFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const img=new Image(),u=URL.createObjectURL(f);img.onload=()=>{const k=Math.min(1,300/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);
+ try{DB.logo=c.toDataURL('image/png');if(DB.logo.length>350000)DB.logo=c.toDataURL('image/jpeg',.85);persist();logoPrev();renderChart();toast('Logo added')}catch(err){toast('Logo too big to save')}};img.onerror=()=>toast('Could not read image');img.src=u;e.target.value=''};
+$('#logoRm').onclick=()=>{delete DB.logo;persist();logoPrev();renderChart();toast('Logo removed')};
 // ---------- New / clear ----------
 $('#clkMore').onclick=()=>{const p=$('#clkPanel');p.hidden=!p.hidden};
 $('#hNew').onclick=()=>{const d=$('#ngDlg');$('#ngName').value='Game '+(DB.games.length+1);$('#ngUs').value=G.us;$('#ngThem').value='';$('#ngDate').value=new Date().toISOString().slice(0,10);$('#ngFull').value=G.full?1:0;d.showModal()};
