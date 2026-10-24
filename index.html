@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Shot Chart">
-<title>Shot Chart</title><meta name="app-version" content="shotchart-v7-zones">
+<title>Shot Chart</title><meta name="app-version" content="shotchart-v8-ball">
 <style>
 :root{--bg:#f3f5f8;--card:#fff;--ink:#0d1726;--mut:#5a6678;--line:#d5dbe4;--acc:#ff6b1a;--us:#1f6feb;--them:#8a3ffc;--make:#0a9d48;--miss:#e5262c;--court:#f9e6c4;--court2:#f3d7a6;--cl:#3d2208;--paint:rgba(255,107,26,.22)}
 :root{color-scheme:light}:root[data-theme=dark]{color-scheme:dark;--bg:#0b1320;--card:#14213a;--ink:#f2f5fa;--mut:#9fb0c8;--line:#2a3a57}
@@ -112,7 +112,7 @@ header h1{font-size:15px;line-height:1.1;display:flex;flex-direction:column;min-
 .pbhud{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;font-weight:800}
 </style>
 </head><body>
-<header><h1><small>SHOT CHART <span id="ver">v7</span></small><span id="title"></span></h1><span id="hdrClock" class="tm"></span><button id="thm" class="thm" aria-label="Toggle light/dark"></button><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New</button></header>
+<header><h1><small>SHOT CHART <span id="ver">v8</span></small><span id="title"></span></h1><span id="hdrClock" class="tm"></span><button id="thm" class="thm" aria-label="Toggle light/dark"></button><button id="hClr" class="hb">Clear</button><button id="hNew" class="hb new">＋ New</button></header>
 
 <section id="v-chart" class="view on">
  <div class="topbar">
@@ -296,7 +296,7 @@ $('#mvCancel').onclick=()=>{ED.moving=false;ED.tmp=null;$('#moveBar').hidden=tru
 function commit(p,make){ghost&&ghost.remove();ghost=null;const z=classify(p.x,p.y,G.three);const pts=make?(z[1]==='3'?3:2):0;
  G.shots.push({id:uid(),t:gameMs(),rem:remain(),period,team,player,x:+p.x.toFixed(2),y:+p.y.toFixed(2),zone:z,make,pts});persist();renderChart();
  navigator.vibrate&&navigator.vibrate(make?[15,30,15]:10);tapPill(G.shots[G.shots.length-1])}
-function undo(){if(ED.id)closeEdit();const i=G.shots.map(s=>s.team).lastIndexOf(team);if(i<0)return toast('Nothing to undo');G.shots.splice(i,1);persist();renderChart();toast('Undid last shot')}
+function undo(){if(ED.id)closeEdit();const i=G.shots.map(s=>s.team).lastIndexOf(team),fi=ftL().map(f=>f.team).lastIndexOf(team);if(fi>=0&&(i<0||ftL()[fi].t>=G.shots[i].t)){ftL().splice(fi,1);persist();renderChart();return toast('Undid last free throw')}if(i<0)return toast('Nothing to undo');G.shots.splice(i,1);persist();renderChart();toast('Undid last shot')}
 $('#undo').onclick=undo;
 
 // ---------- FT / zones / helpers ----------
@@ -373,8 +373,8 @@ $$('#pbRes button').forEach(b=>b.onclick=()=>{pbR=b.dataset.r;$$('#pbRes button'
 function hoopOf(s){return{x:25,y:s.y>47?94-HY:HY}}
 function pbDraw(){const L=pbList();pb.n=Math.min(pb.n,L.length);const sv=$('#rcourt');drawCourt(sv,[],arcsSVG(L.slice(0,pb.n))+L.slice(0,pb.n).map(x=>marker(x)).join(''));sv.insertAdjacentHTML('beforeend','<g id="fx"></g>');$('#scrub').max=L.length;$('#scrub').value=pb.n;pbHud(L,pb.n,L[pb.n-1]);
  const cur=hl&&L.slice(0,pb.n).find(s=>s.id===hl);cur&&sv.insertAdjacentHTML('beforeend',`<circle cx="${cur.x}" cy="${cur.y}" r="2.2" fill="none" stroke="var(--acc)" stroke-width=".35"/>`)}
-function pbHud(L,n,cur){const d=L.slice(0,n),sc={us:0,them:0};d.forEach(s=>sc[s.team]+=s.pts);const m=d.filter(s=>s.make).length,t3=d.filter(s=>s.zone[1]==='3'),t3m=t3.filter(s=>s.make).length,pt=d.reduce((a,s)=>a+s.pts,0);
- $('#pbHud').innerHTML=`<span class="sc">${esc(G.us)} <b>${sc.us}</b> · ${esc(G.them)} <b>${sc.them}</b></span><span>FG ${m}/${d.length} ${pct(m,d.length)}</span><span>3PT ${t3m}/${t3.length}</span><span>${d.length?(pt/d.length).toFixed(2):'–'} PPS</span><span class="tm">${cur?shotClk(cur):''}</span>`}
+function pbHud(L,n,cur){const d=L.slice(0,n),sc={us:0,them:0};const tE=cur?cur.t:-1,fts=ftL().filter(f=>f.t<=tE&&($('#pbTeam').value==='both'||!$('#pbTeam').value||f.team===$('#pbTeam').value)&&(!$('#pbPlayer').value||String(f.player)===$('#pbPlayer').value)),fm=fts.filter(f=>f.make).length;d.forEach(s=>sc[s.team]+=s.pts);fts.forEach(f=>f.make&&sc[f.team]++);const m=d.filter(s=>s.make).length,t3=d.filter(s=>s.zone[1]==='3'),t3m=t3.filter(s=>s.make).length,pt=d.reduce((a,s)=>a+s.pts,0);
+ $('#pbHud').innerHTML=`<span class="sc">${esc(G.us)} <b>${sc.us}</b> · ${esc(G.them)} <b>${sc.them}</b></span><span>FG ${m}/${d.length} ${pct(m,d.length)}</span><span>3PT ${t3m}/${t3.length}</span><span>FT ${fm}/${fts.length}</span><span>${d.length?(pt/d.length).toFixed(2):'–'} PPS</span><span class="tm">${cur?shotClk(cur):''}</span>`}
 function figY(s){return s.y>47?Math.min(s.y,89.4):Math.max(s.y,4.6)}
 const SKIN=['#f1c27d','#c68642','#8d5524','#e0ac69'],HAIR=['#2b1b0e','#5a3214','#111','#a0522d'];
 function figure(s){const col=s.team==='us'?'var(--us)':'var(--them)',h=[...(s.player||s.id)].reduce((a,c)=>a+c.charCodeAt(0),0),sk=SKIN[h%4],hr=HAIR[(h>>2)%4];
@@ -410,28 +410,25 @@ function arcPath(s){const r={x:s.x,y:s.y},h=hoopOf(s);return `M${r.x.toFixed(2)}
 let showArcs=localStorage.getItem('shotchart.arcs')!=='0';
 function arcsSVG(L){return showArcs?L.map(s=>`<path d="${arcPath(s)}" fill="none" stroke="${s.make?'var(--make)':'var(--miss)'}" stroke-width=".22" stroke-linecap="round" opacity=".38"/>`).join(''):''}
 const TN=16;
-function animShot(s,done){pb.anim=true;const fx=$('#fx'),c=s.make?'var(--make)':'var(--miss)';
+function animShot(s,done){pb.anim=true;const fx=$('#fx'),mk=s.make,c=mk?'#0fae52':'#e5262c';
  let tr='';for(let i=0;i<TN;i++){const k=1-i/TN;tr+=`<circle r="${(.5*k+.06).toFixed(3)}" fill="${c}" opacity="0"/>`}
- fx.innerHTML=`<polyline id="trS" fill="none" stroke="rgba(0,0,0,.22)" stroke-width=".5" stroke-linecap="round" stroke-linejoin="round" transform="translate(.25 .45)"/><polyline id="trL" fill="none" stroke="${c}" stroke-width=".42" stroke-linecap="round" stroke-linejoin="round"/><g class="trail glow">${tr}</g>`+figure(s)+`<ellipse id="bshd" rx=".5" ry=".3" fill="rgba(0,0,0,.25)" cx="-99" cy="-99"/><circle id="ball" r=".55" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="-99" cy="-99"/><circle id="flash" r="0" fill="none" stroke-width=".5"/>`;
- const sv=$('#rcourt'),q=k=>fx.querySelector(k),bshd=fx.querySelector('#bshd'),F={lift:q('.lift'),torso:q('.torso'),leg:q('.leg'),arm:q('.arm'),slv:q('.slv'),shL:q('.shL'),shR:q('.shR'),shd:q('.shd')},pop=q('.pop'),ball=q('#ball'),fl=q('#flash'),trail=[...fx.querySelectorAll('.trail circle')],hp=hoopOf(s);
+ fx.innerHTML=`<circle id="spot" cx="${s.x}" cy="${s.y}" r="0" fill="none" stroke="${c}" stroke-width=".3"/><ellipse id="bshd" rx=".55" ry=".55" fill="rgba(0,0,0,.28)" cx="${s.x}" cy="${s.y}"/><polyline id="trL" fill="none" stroke="${c}" stroke-width=".45" stroke-linecap="round" stroke-linejoin="round" ${mk?'style="filter:drop-shadow(0 0 .5px #3dff8f)"':''}/><g class="trail glow">${tr}</g><circle id="ball" r=".6" fill="#ff7a1a" stroke="#7a3300" stroke-width=".1" cx="${s.x}" cy="${s.y}"/><circle id="flash" r="0" fill="none" stroke="${c}" stroke-width=".5"/>`;
+ const sv=$('#rcourt'),q=k=>fx.querySelector(k),bshd=q('#bshd'),ball=q('#ball'),fl=q('#flash'),spot=q('#spot'),tl=q('#trL'),trail=[...fx.querySelectorAll('.trail circle')],hp=hoopOf(s);
  const nets=[...sv.querySelectorAll('.net')],net=nets.length>1&&s.y>47?nets[1]:nets[0],rims=sv.querySelectorAll('circle[stroke="#ff6b1a"]');
- const ox=s.x,oy=figY(s),r=relPt(s),arc=arcPts(s,r.x,r.y),D=1900/pb.speed,t0=performance.now(),side=s.x<=25?1:-1,hist=[];
- fl.setAttribute('cx',hp.x);fl.setAttribute('cy',hp.y);fl.setAttribute('stroke',c);
- function f(now){const t=Math.min(1,(now-t0)/D);
-  const pp=seg(t,0,.1),sc=pp<1?Math.sin(pp*Math.PI*.75)/Math.sin(Math.PI*.75)*(1+.15*Math.sin(pp*Math.PI)):1;pop.setAttribute('transform',`scale(${sc.toFixed(3)})`);
-  const dip=Math.sin(seg(t,.1,.2)*Math.PI/2)*(1-seg(t,.2,.25)),up=seg(t,.2,.3),land=seg(t,.44,.54),h=Math.sin(ease(up)*Math.PI/2)*.9*(1-ease(land)),crouchLand=Math.sin(land*Math.PI)*.6;
-  const arm=ease(seg(t,.18,.3)),wr=seg(t,.3,.38)*(1-seg(t,.55,.7)*.6);
-  const bp=pose(F,Math.max(dip,crouchLand),h,arm,wr);
-  if(t<.3){ball.setAttribute('cx',(ox+bp.x*1.6).toFixed(2));ball.setAttribute('cy',(oy+bp.y*1.6).toFixed(2))}
-  else if(t<.72){const u=ease(seg(t,.3,.72)),p=arc(u),ht=Math.sin(u*Math.PI);ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('r',(.55+ht*.28).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',p.y.toFixed(2));bshd.setAttribute('rx',(.55+ht*.5).toFixed(2));bshd.setAttribute('ry',(.55+ht*.5).toFixed(2));bshd.setAttribute('opacity',(1-ht*.5).toFixed(2));hist.unshift({x:p.x,y:p.y})}
-  else{const u=(t-.72)/.28,dir=hp.y>47?-1:1;ball.setAttribute('r','.55');
-   if(s.make){bshd.setAttribute('opacity',0);ball.setAttribute('cx',hp.x);ball.setAttribute('cy',hp.y+u*1.8*dir);ball.setAttribute('opacity',(1-u).toFixed(2));net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`)}
-   else{const L=Math.hypot(hp.x-r.x,hp.y-r.y)||1,bx=(r.x-hp.x)/L,by=(r.y-hp.y)/L,hop=Math.abs(Math.sin(u*Math.PI*2))*(1-u)*.7,p={x:hp.x+bx*u*2.6,y:hp.y+by*u*2.6};ball.setAttribute('r',(.55+hop*.3).toFixed(3));bshd.setAttribute('cx',p.x.toFixed(2));bshd.setAttribute('cy',p.y.toFixed(2));ball.setAttribute('cx',p.x.toFixed(2));ball.setAttribute('cy',p.y.toFixed(2));hist.unshift(p);rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.25).toFixed(3)} 0)`))}
-   fl.setAttribute('r',(u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2));pop.setAttribute('opacity',(1-cl((u-.4)/.6)*.9).toFixed(2));hist.unshift(hist[0])}
-  if(hist.length>TN*2)hist.length=TN*2;const fade=t>.72?1-seg(t,.8,1):1;
-  {const pts=hist.filter((_,i)=>i%2===0).slice(0,TN).map(p=>p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ');const tl=fx.querySelector('#trL'),ts=fx.querySelector('#trS');tl.setAttribute('points',pts);ts.setAttribute('points',pts);tl.setAttribute('opacity',(.9*fade).toFixed(2));ts.setAttribute('opacity',fade.toFixed(2))}
+ const L=Math.hypot(hp.x-s.x,hp.y-s.y)||1,ux=(hp.x-s.x)/L,uy=(hp.y-s.y)/L,stop=mk?0:.8,ex=hp.x-ux*stop,ey=hp.y-uy*stop,lift=Math.min(3.2,.6+L*.12),D=1500/pb.speed,t0=performance.now(),hist=[];
+ fl.setAttribute('cx',ex);fl.setAttribute('cy',ey);
+ const B=(x,y,r,o=1)=>{ball.setAttribute('cx',x.toFixed(2));ball.setAttribute('cy',y.toFixed(2));ball.setAttribute('r',r.toFixed(3));ball.setAttribute('opacity',o.toFixed(2))},S=(x,y,r,o)=>{bshd.setAttribute('cx',x.toFixed(2));bshd.setAttribute('cy',y.toFixed(2));bshd.setAttribute('rx',r.toFixed(2));bshd.setAttribute('ry',r.toFixed(2));bshd.setAttribute('opacity',o.toFixed(2))};
+ function f(now){const t=Math.max(0,Math.min(1,(now-t0)/D));
+  if(t<.08){const k=t/.08;spot.setAttribute('r',(k*2).toFixed(2));spot.setAttribute('opacity',(1-k).toFixed(2));B(s.x,s.y,.6);S(s.x,s.y,.6,1);hist.unshift({x:s.x,y:s.y})}
+  else if(t<.68){const u=ease(seg(t,.08,.68)),ht=Math.sin(u*Math.PI),gx=s.x+(ex-s.x)*u,gy=s.y+(ey-s.y)*u,p={x:gx,y:gy-ht*lift};B(p.x,p.y,.6+ht*.42);S(gx,gy,.6-ht*.25,1-ht*.6);hist.unshift(p)}
+  else{const u=(t-.68)/.32;
+   if(mk){const d=Math.min(1,u*2.2),dir=hp.y>47?-1:1;B(hp.x,hp.y+d*1.2*dir,.6-d*.25,1-d);S(hp.x,hp.y,.4,(1-d)*.4);net&&(net.style.transform=`scaleY(${1+Math.sin(u*Math.PI*4)*.45*(1-u)}) scaleX(${1-Math.sin(u*Math.PI*4)*.15*(1-u)})`);hist.unshift({x:hp.x,y:hp.y})}
+   else{const v=Math.min(1,u*1.6),bh=Math.sin(v*Math.PI)*1.3,gx=ex-ux*v*3.2,gy=ey-uy*v*3.2;B(gx,gy-bh,.6+bh*.15,1-seg(u,.7,1));S(gx,gy,.55,.8*(1-seg(u,.7,1)));hist.unshift({x:gx,y:gy-bh});rims.forEach(r=>r.setAttribute('transform',`translate(${(Math.sin(u*40)*(1-u)*.3).toFixed(3)} ${(Math.cos(u*33)*(1-u)*.15).toFixed(3)})`))}
+   fl.setAttribute('r',(.5+u*4.5).toFixed(2));fl.setAttribute('opacity',(1-u).toFixed(2))}
+  if(hist.length>TN*2)hist.length=TN*2;const fade=t>.68?1-seg(t,.78,1):1;
+  tl.setAttribute('points',hist.filter((_,i)=>i%2===0).slice(0,TN).map(p=>p.x.toFixed(2)+','+p.y.toFixed(2)).join(' '));tl.setAttribute('opacity',(.85*fade).toFixed(2));
   trail.forEach((e,i)=>{const p=hist[i*2];if(!p){e.setAttribute('opacity',0);return}e.setAttribute('cx',p.x.toFixed(2));e.setAttribute('cy',p.y.toFixed(2));e.setAttribute('opacity',((1-i/TN)*.75*fade).toFixed(2))});
-  if(t<1)pb.raf=requestAnimationFrame(f);else{pb.anim=false;done()}}
+  if(t<1)pb.raf=requestAnimationFrame(f);else{rims.forEach(r=>r.removeAttribute('transform'));net&&(net.style.transform='');pb.anim=false;done()}}
  pb.raf=requestAnimationFrame(f)}
 function pbStep(){const L=pbList();if(pb.n>=L.length){pbStop();return}const s=L[pb.n];pbHud(L,pb.n,s);hl=null;
  animShot(s,()=>{pb.n++;pbDraw();markList();if(pb.playing)pb.to=setTimeout(pbStep,180/pb.speed)})}
@@ -473,9 +470,9 @@ function dl(name,data,type){const b=data instanceof Blob?data:new Blob([data],{t
  if(navigator.canShare&&navigator.canShare({files:[f]})&&/Mobi|Android|iPhone/.test(navigator.userAgent)){navigator.share({files:[f],title:name}).catch(()=>{});return}
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 const slug=()=>(G.name||'game').replace(/[^\w-]+/g,'_');
-function csv(){const q=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;return['clock,game_time,game_seconds,period,team,player,x_ft,y_ft,zone,quality,result,points',...G.shots.map(s=>[shotClk(s),fmt(s.t),Math.round(s.t/1000),perL(s.period),tname(s.team),s.player||'',s.x,s.y,ZONES[s.zone].n,ZONES[s.zone].q,s.make?'make':'miss',s.pts].map(v=>q(String(v))).join(','))].join('\n')}
+function csv(){const q=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;const all=[...G.shots,...ftL().map(f=>({...f,ft:1}))].sort((a,b)=>a.t-b.t);return['clock,game_time,game_seconds,period,team,player,type,x_ft,y_ft,zone,quality,result,points',...all.map(s=>[shotClk(s),fmt(s.t),Math.round(s.t/1000),perL(s.period),tname(s.team),s.player||'',s.ft?'FT':'FG',s.ft?'':s.x,s.ft?'':s.y,s.ft?'Free throw':ZONES[s.zone].n,s.ft?'':ZONES[s.zone].q,s.make?'make':'miss',s.ft?(s.make?1:0):s.pts].map(v=>q(String(v))).join(','))].join('\n')}
 $('#xCsv').onclick=()=>dl(slug()+'.csv',csv(),'text/csv');
-function tsList(){return G.shots.slice().sort((a,b)=>a.t-b.t).map(s=>`${fmt(s.t)} (${shotClk(s)}) ${tname(s.team)}${s.player?' #'+s.player:''} ${s.make?'MAKE':'miss'} ${ZONES[s.zone].n}`).join('\n')}
+function tsList(){return [...G.shots,...ftL().map(f=>({...f,ft:1}))].sort((a,b)=>a.t-b.t).map(s=>`${fmt(s.t)} (${shotClk(s)}) ${tname(s.team)}${s.player?' #'+s.player:''} ${s.make?'MAKE':'miss'} ${s.ft?'Free throw':ZONES[s.zone].n}`).join('\n')}
 $('#xTs').onclick=async()=>{const t=tsList(),o=$('#tsOut');o.style.display='block';o.value=t;try{await navigator.clipboard.writeText(t);toast('Timestamps copied')}catch(e){o.select();document.execCommand('copy');toast('Copied (or select the text)')}};
 $('#xJson').onclick=()=>dl('shotchart-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(DB,null,1),'application/json');
 $('#iJson').onclick=()=>$('#iFile').click();
